@@ -30,7 +30,6 @@ void myDisplay(void) {
 	glVertex2i(arioX, arioY + 20);
 	glEnd();
 
-
 	// bullet
 	glBegin(GL_LINES);
 	for (int i = 0; i < shotLim; i++) {
@@ -56,7 +55,7 @@ void myMouse(int button, int state, int x, int y) {
 		}
 
 		g_mp3_stream = FSOUND_Stream_Open("mouse.mp3", FSOUND_2D, 0, 0);
-		FSOUND_Stream_Play(0,g_mp3_stream);
+		FSOUND_Stream_Play(0, g_mp3_stream);
 	}
 
 	glutPostRedisplay();
@@ -128,11 +127,10 @@ void main(int argc, char* argv[]) {
 	}
 
 	glutInit(&argc, argv);
-
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-
 	glutInitWindowSize(width, height);
 	glutCreateWindow("My First Practice");
+	glutSetCursor(GLUT_CURSOR_NONE);
 
 	glutDisplayFunc(myDisplay);
 	glutMouseFunc(myMouse);
