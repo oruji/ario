@@ -2,9 +2,7 @@
 #include <fmod/fmod.h>
 #include <fmod/fmod_errors.h>
 #include <iostream>
-#include <GL/glut.h>
-#include <vector>
-#include <map>
+#include <gl/glut.h>
 
 using namespace std;
 
@@ -26,19 +24,23 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Ario
-	glRectf(arioX -25, arioY, arioX + 25, arioY - 25);
+	glBegin(GL_TRIANGLES);
+	glVertex2i(arioX - 20, arioY);
+	glVertex2i(arioX + 20, arioY);
+	glVertex2i(arioX, arioY + 20);
+	glEnd();
 
 
+	// bullet
 	glBegin(GL_LINES);
-
 	for (int i = 0; i < shotLim; i++) {
 		if (xs[i] > 0 && ys[i] > 0) {
 			glVertex2i(xs[i], ys[i]);
 			glVertex2i(xs[i], ys[i] + 10);
 		}
 	}
-
 	glEnd();
+
 	glutSwapBuffers();
 }
 
@@ -71,7 +73,6 @@ void myTimer(int value) {
 			ys[i] += 6;
 	}
 
-
 	glutPostRedisplay();
 	glutTimerFunc(20, myTimer, 1);
 }
@@ -81,6 +82,32 @@ void myPassiveMotion(int x, int y) {
 	arioY = (height - y);
 
 	glutPostRedisplay();
+}
+
+void myReshape(int w, int h) {
+	GLfloat aspectRatio;
+
+	if(h == 0)
+		h = 1;
+
+	// Set Viewport to window dimensions
+	glViewport(0, 0, w, h);
+
+	// Reset coordinate system
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// Establish clipping volume (left, right, bottom, top, near, far)
+	aspectRatio = (GLfloat) w / (GLfloat) h;
+
+	if (w <= h) 
+		gluOrtho2D(0, width, 0 / aspectRatio, height / aspectRatio);
+
+	else 
+		gluOrtho2D(0 * aspectRatio, width * aspectRatio, 0, height);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 void main(int argc, char* argv[]) {
@@ -103,9 +130,8 @@ void main(int argc, char* argv[]) {
 	glutDisplayFunc(myDisplay);
 	glutMouseFunc(myMouse);
 	glutTimerFunc(20, myTimer, 1);
-		glutPassiveMotionFunc(myPassiveMotion);
-
-	gluOrtho2D(0, width, 0, height);
+	glutPassiveMotionFunc(myPassiveMotion);
+	glutReshapeFunc(myReshape);
 
 	glutMainLoop();
 
