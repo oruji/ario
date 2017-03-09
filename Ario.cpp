@@ -3,6 +3,7 @@
 #include <fmod/fmod_errors.h>
 #include <iostream>
 #include <gl/glut.h>
+#include <ctime>
 
 using namespace std;
 
@@ -13,8 +14,9 @@ FSOUND_STREAM* g_mp3_stream = NULL;
 GLuint width = 400;
 GLuint height = 400;
 
-GLuint ys[200] = {};
-GLuint xs[200] = {};
+GLuint bulletYArray[200] = {};
+GLuint bulletXArray[200] = {};
+
 GLuint shotLim = 200;
 
 GLuint arioX;
@@ -33,9 +35,9 @@ void myDisplay(void) {
 	// bullet
 	glBegin(GL_LINES);
 	for (int i = 0; i < shotLim; i++) {
-		if (xs[i] > 0 && ys[i] > 0) {
-			glVertex2i(xs[i], ys[i]);
-			glVertex2i(xs[i], ys[i] + 10);
+		if (bulletXArray[i] > 0 && bulletYArray[i] > 0) {
+			glVertex2i(bulletXArray[i], bulletYArray[i]);
+			glVertex2i(bulletXArray[i], bulletYArray[i] + 10);
 		}
 	}
 	glEnd();
@@ -46,9 +48,9 @@ void myDisplay(void) {
 void myMouse(int button, int state, int x, int y) {
 	if (state == 0) {
 		for (int i = 0; i < shotLim; i++) {
-			if (xs[i] == 0 && ys[i] == 0) {
-				xs[i] = x;
-				ys[i] = height - y;
+			if (bulletXArray[i] == 0 && bulletYArray[i] == 0) {
+				bulletXArray[i] = x;
+				bulletYArray[i] = height - y;
 
 				break;
 			}
@@ -56,6 +58,8 @@ void myMouse(int button, int state, int x, int y) {
 
 		g_mp3_stream = FSOUND_Stream_Open("mouse.mp3", FSOUND_2D, 0, 0);
 		FSOUND_Stream_Play(0, g_mp3_stream);
+
+		arioY -= 3;
 	}
 
 	glutPostRedisplay();
@@ -63,13 +67,13 @@ void myMouse(int button, int state, int x, int y) {
 
 void myTimer(int value) {
 	for (int i = 0; i < shotLim; i++) {
-		if (ys[i] > 400) {
-			ys[i] = 0;
-			xs[i] = 0;
+		if (bulletYArray[i] > 400) {
+			bulletYArray[i] = 0;
+			bulletXArray[i] = 0;
 		}
 
-		if (ys[i] > 0)
-			ys[i] += 6;
+		if (bulletYArray[i] > 0)
+			bulletYArray[i] += 6;
 	}
 
 	glutPostRedisplay();
