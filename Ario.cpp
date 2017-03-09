@@ -84,6 +84,13 @@ void myPassiveMotion(int x, int y) {
 	glutPostRedisplay();
 }
 
+void myMotion(int x, int y) {
+	arioX = x;
+	arioY = (height - y);
+
+	glutPostRedisplay();
+}
+
 void myReshape(int w, int h) {
 	GLfloat aspectRatio;
 
@@ -131,6 +138,7 @@ void main(int argc, char* argv[]) {
 	glutMouseFunc(myMouse);
 	glutTimerFunc(20, myTimer, 1);
 	glutPassiveMotionFunc(myPassiveMotion);
+	glutMotionFunc(myMotion);
 	glutReshapeFunc(myReshape);
 
 	glutMainLoop();
