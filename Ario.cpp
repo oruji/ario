@@ -12,12 +12,22 @@ using namespace std;
 
 FSOUND_STREAM* g_mp3_stream = NULL;
 
+GLuint width = 400;
+GLuint height = 400;
+
 GLuint ys[200] = {};
 GLuint xs[200] = {};
-int shotLim = 200;
+GLuint shotLim = 200;
+
+GLuint arioX;
+GLuint arioY;
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Ario
+	glRectf(arioX -25, arioY, arioX + 25, arioY - 25);
+
 
 	glBegin(GL_LINES);
 
@@ -37,7 +47,7 @@ void myMouse(int button, int state, int x, int y) {
 		for (int i = 0; i < shotLim; i++) {
 			if (xs[i] == 0 && ys[i] == 0) {
 				xs[i] = x;
-				ys[i] = 400 - y;
+				ys[i] = height - y;
 
 				break;
 			}
@@ -66,6 +76,13 @@ void myTimer(int value) {
 	glutTimerFunc(20, myTimer, 1);
 }
 
+void myPassiveMotion(int x, int y) {
+	arioX = x;
+	arioY = (height - y);
+
+	glutPostRedisplay();
+}
+
 void main(int argc, char* argv[]) {
 	//cin.get();
 
@@ -80,14 +97,15 @@ void main(int argc, char* argv[]) {
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
-	glutInitWindowSize(400, 400);
+	glutInitWindowSize(width, height);
 	glutCreateWindow("My First Practice");
 
 	glutDisplayFunc(myDisplay);
 	glutMouseFunc(myMouse);
 	glutTimerFunc(20, myTimer, 1);
+		glutPassiveMotionFunc(myPassiveMotion);
 
-	gluOrtho2D(0, 400, 0, 400);
+	gluOrtho2D(0, width, 0, height);
 
 	glutMainLoop();
 
