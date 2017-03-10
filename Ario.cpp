@@ -14,13 +14,17 @@ FSOUND_STREAM* g_mp3_stream = NULL;
 GLuint width = 400;
 GLuint height = 400;
 
-GLuint bulletYArray[200] = {};
-GLuint bulletXArray[200] = {};
+GLuint bulletYArray[100] = {};
+GLuint bulletXArray[100] = {};
 
-GLuint shotLim = 200;
+GLuint shotLim = 100;
 
 GLuint arioX;
 GLuint arioY;
+
+GLuint enemyX = 200;
+GLuint enemyY = 200;
+GLboolean isAlive = true;
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -31,6 +35,30 @@ void myDisplay(void) {
 	glVertex2i(arioX + 20, arioY);
 	glVertex2i(arioX, arioY + 20);
 	glEnd();
+
+	// Enemy
+
+	for (int i = 0; i < shotLim; i++) {
+		if (bulletXArray[i] != 0 && bulletYArray[i] != 0)
+			if (bulletXArray[i] > enemyX - 20 && bulletXArray[i] < enemyX + 20)
+				if (bulletYArray[i] > enemyY - 20 && bulletYArray[i] < enemyY) {
+					isAlive = false;
+
+					break;
+				}
+	}
+
+	// Enemy
+	if (isAlive) {
+		glColor3f(1, 0, 0);
+		glBegin(GL_TRIANGLES);
+		glVertex2i(enemyX, enemyY - 20);
+		glVertex2i(enemyX + 20, enemyY);
+		glVertex2i(enemyX - 20, enemyY);
+		glEnd();
+		glColor3f(1, 1, 1);
+	}
+
 
 	// bullet
 	glBegin(GL_LINES);
@@ -133,7 +161,7 @@ void main(int argc, char* argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(width, height);
-	glutCreateWindow("My First Practice");
+	glutCreateWindow("Ario 0.0.1");
 	glutSetCursor(GLUT_CURSOR_NONE);
 
 	glutDisplayFunc(myDisplay);
