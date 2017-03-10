@@ -4,6 +4,7 @@
 #include <ctime>
 #include "FMOD_API/inc/fmod.hpp"
 #include "FMOD_API/inc/fmod_errors.h"
+
 using namespace std;
 
 #pragma comment(lib, "FMOD_API/lib/fmodex_vc.lib")
@@ -14,44 +15,35 @@ FMOD::Sound *mySound;
 GLuint width = 400;
 GLuint height = 400;
 
-GLuint bulletYArray[100] = {};
-GLuint bulletXArray[100] = {};
-GLboolean bulletIsAlive[100] = {false};
-
-GLuint bulletLimit = 100;
-
 GLuint arioX;
 GLuint arioY;
+GLboolean arioIsAlive = true;
+
+GLuint arioBulletsY[100] = {};
+GLuint arioBulletsX[100] = {};
+GLboolean arioBulletsIsAlive[100] = {false};
+GLuint arioBulletLimit = 100;
 
 GLuint enemyX = 200;
 GLuint enemyY = 200;
 GLboolean enemyIsAlive = true;
 
+GLuint enemyBulletsY[20] = {};
+GLuint enemyBulletsX[20] = {};
+GLboolean enemyBulletsIsAlive[20] = {false};
+GLuint enemyBulletLimit = 20;
+
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Ario
-	glBegin(GL_TRIANGLES);
-	glVertex2i(arioX - 20, arioY);
-	glVertex2i(arioX + 20, arioY);
-	glVertex2i(arioX, arioY + 20);
-	glEnd();
-
-	// bullet strike to enemy
-	for (int i = 0; i < bulletLimit; i++) {
-		if (bulletIsAlive[i] && enemyIsAlive)
-			if (bulletXArray[i] > enemyX - 20 && bulletXArray[i] < enemyX + 20)
-				if (bulletYArray[i] > enemyY - 20 && bulletYArray[i] < enemyY) {
-					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
-
-					enemyIsAlive = false;
-					bulletIsAlive[i] = false;
-					bulletXArray[i] = 0;
-					bulletYArray[i] = 0;
-
-					break;
-				}
+	if (arioIsAlive) {
+		glColor3f(1, 1, 1);
+		glBegin(GL_TRIANGLES);
+		glVertex2i(arioX - 20, arioY);
+		glVertex2i(arioX + 20, arioY);
+		glVertex2i(arioX, arioY + 20);
+		glEnd();
 	}
 
 	// Enemy
@@ -62,15 +54,60 @@ void myDisplay(void) {
 		glVertex2i(enemyX + 20, enemyY);
 		glVertex2i(enemyX - 20, enemyY);
 		glEnd();
-		glColor3f(1, 1, 1);
 	}
 
-	// bullet
+	// ario's bullets strike to enemy
+	for (int i = 0; i < arioBulletLimit; i++) {
+		if (arioBulletsIsAlive[i] && enemyIsAlive)
+			if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20)
+				if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY) {
+					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
+					enemyIsAlive = false;
+					arioBulletsIsAlive[i] = false;
+					arioBulletsX[i] = 0;
+					arioBulletsY[i] = 0;
+
+					break;
+				}
+	}
+
+	// enemy's bullets strike to ario
+	for (int i = 0; i < enemyBulletLimit; i++) {
+		if (enemyBulletsIsAlive[i] && arioIsAlive)
+			if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20)
+				if (enemyBulletsY[i] > arioY - 20 && enemyBulletsY[i] < arioY) {
+					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
+					arioIsAlive = false;
+					enemyBulletsIsAlive[i] = false;
+					enemyBulletsX[i] = 0;
+					enemyBulletsY[i] = 0;
+
+					break;
+				}
+	}
+
+	// ario bullet
+	glColor3f(1, 1, 1);
 	glBegin(GL_LINES);
-	for (int i = 0; i < bulletLimit; i++) {
-		if (bulletIsAlive) {
-			glVertex2i(bulletXArray[i], bulletYArray[i]);
-			glVertex2i(bulletXArray[i], bulletYArray[i] + 10);
+	for (int i = 0; i < arioBulletLimit; i++) {
+		if (arioBulletsIsAlive[i]) {
+			glVertex2i(arioBulletsX[i], arioBulletsY[i]);
+			glVertex2i(arioBulletsX[i], arioBulletsY[i] + 10);
+		}
+	}
+	glEnd();
+
+	// enemy bullet
+	glColor3f(1, 0, 0);
+	glBegin(GL_LINES);
+	for (int i = 0; i < enemyBulletLimit; i++) {
+		if (enemyBulletsIsAlive[i]) {
+			glVertex2i(enemyBulletsX[i], enemyBulletsY[i]);
+			glVertex2i(enemyBulletsX[i], enemyBulletsY[i] + 10);
 		}
 	}
 	glEnd();
@@ -80,38 +117,73 @@ void myDisplay(void) {
 
 void myMouse(int button, int state, int x, int y) {
 
-	if (GLUT_LEFT_BUTTON == button)
-		if (state == 0) {
-			for (int i = 0; i < bulletLimit; i++) {
-				if (!bulletIsAlive[i]) {
-					bulletXArray[i] = x;
-					bulletYArray[i] = height - y;
-					bulletIsAlive[i] = true;
+	// ario shot
+	if (arioIsAlive)
+		if (GLUT_LEFT_BUTTON == button)
+			if (state == 0) {
+				for (int i = 0; i < arioBulletLimit; i++) {
+					if (!arioBulletsIsAlive[i]) {
+						arioBulletsX[i] = x;
+						arioBulletsY[i] = height - y;
+						arioBulletsIsAlive[i] = true;
 
-					break;
+						break;
+					}
 				}
+
+				mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+				mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
+				arioY -= 3;
 			}
 
-			mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-			mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+			// enemy shot
+			if (enemyIsAlive)
+				if (GLUT_RIGHT_BUTTON == button)
+					if (state == 0) {
+						for (int i = 0; i < enemyBulletLimit; i++) {
+							if (!enemyBulletsIsAlive[i]) {
+								enemyBulletsX[i] = enemyX;
+								enemyBulletsY[i] = height - enemyY;
+								enemyBulletsIsAlive[i] = true;
 
-			arioY -= 3;
-		}
+								break;
+							}
+						}
 
-		glutPostRedisplay();
+						mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+						mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+					}
+
+					glutPostRedisplay();
 }
 
 void myTimer(int value) {
-	for (int i = 0; i < bulletLimit; i++) {
-		if (bulletIsAlive[i])
-			if (bulletYArray[i] > 400) {
-				bulletYArray[i] = 0;
-				bulletXArray[i] = 0;
-				bulletIsAlive[i] = false;
+
+	// ario bullets movement
+	for (int i = 0; i < arioBulletLimit; i++) {
+		if (arioBulletsIsAlive[i])
+			if (arioBulletsY[i] > 400) {
+				arioBulletsY[i] = 0;
+				arioBulletsX[i] = 0;
+				arioBulletsIsAlive[i] = false;
 			}
 
-			if (bulletYArray[i] > 0)
-				bulletYArray[i] += 6;
+			if (arioBulletsIsAlive[i])
+				arioBulletsY[i] += 6;
+	}
+
+	// enemy bullets movement
+	for (int i = 0; i < enemyBulletLimit; i++) {
+		if (enemyBulletsIsAlive[i])
+			if (enemyBulletsY[i] == 0) {
+				enemyBulletsY[i] = 0;
+				enemyBulletsX[i] = 0;
+				enemyBulletsIsAlive[i] = false;
+			}
+
+			if (enemyBulletsIsAlive[i])
+				enemyBulletsY[i] -= 6;
 	}
 
 	glutPostRedisplay();
