@@ -9,7 +9,8 @@ using namespace std;
 
 #pragma comment(lib, "fmod.lib")
 
-FSOUND_STREAM* g_mp3_stream = NULL;
+FSOUND_STREAM* shotSound = NULL;
+FSOUND_STREAM* explosion = NULL;
 
 GLuint width = 400;
 GLuint height = 400;
@@ -37,13 +38,14 @@ void myDisplay(void) {
 	glVertex2i(arioX, arioY + 20);
 	glEnd();
 
-	// Enemy killing
+	// bullet strike to enemy
 	for (int i = 0; i < bulletLimit; i++) {
 		if (bulletIsAlive[i] && enemyIsAlive)
 			if (bulletXArray[i] > enemyX - 20 && bulletXArray[i] < enemyX + 20)
 				if (bulletYArray[i] > enemyY - 20 && bulletYArray[i] < enemyY) {
+					explosion = FSOUND_Stream_Open("explosion.mp3", FSOUND_2D, 0, 0);
+					FSOUND_Stream_Play(0, explosion);
 					enemyIsAlive = false;
-
 					bulletIsAlive[i] = false;
 					bulletXArray[i] = 0;
 					bulletYArray[i] = 0;
@@ -88,8 +90,8 @@ void myMouse(int button, int state, int x, int y) {
 			}
 		}
 
-		g_mp3_stream = FSOUND_Stream_Open("mouse.mp3", FSOUND_2D, 0, 0);
-		FSOUND_Stream_Play(0, g_mp3_stream);
+		shotSound = FSOUND_Stream_Open("shot.mp3", FSOUND_2D, 0, 0);
+		FSOUND_Stream_Play(0, shotSound);
 
 		arioY -= 3;
 	}
@@ -179,7 +181,9 @@ void main(int argc, char* argv[]) {
 
 	glutMainLoop();
 
-	FSOUND_Stream_Stop(g_mp3_stream);
-	FSOUND_Stream_Close(g_mp3_stream);
+	FSOUND_Stream_Stop(shotSound);
+	FSOUND_Stream_Close(shotSound);
+	FSOUND_Stream_Stop(explosion);
+	FSOUND_Stream_Close(explosion);
 	FSOUND_Close();
 }
