@@ -16,15 +16,16 @@ GLuint height = 400;
 
 GLuint bulletYArray[100] = {};
 GLuint bulletXArray[100] = {};
+GLboolean bulletIsAlive[100] = {false};
 
-GLuint shotLim = 100;
+GLuint bulletLimit = 100;
 
 GLuint arioX;
 GLuint arioY;
 
 GLuint enemyX = 200;
 GLuint enemyY = 200;
-GLboolean isAlive = true;
+GLboolean enemyIsAlive = true;
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -36,20 +37,23 @@ void myDisplay(void) {
 	glVertex2i(arioX, arioY + 20);
 	glEnd();
 
-	// Enemy
-
-	for (int i = 0; i < shotLim; i++) {
-		if (bulletXArray[i] != 0 && bulletYArray[i] != 0)
+	// Enemy killing
+	for (int i = 0; i < bulletLimit; i++) {
+		if (bulletIsAlive[i] && enemyIsAlive)
 			if (bulletXArray[i] > enemyX - 20 && bulletXArray[i] < enemyX + 20)
 				if (bulletYArray[i] > enemyY - 20 && bulletYArray[i] < enemyY) {
-					isAlive = false;
+					enemyIsAlive = false;
+
+					bulletIsAlive[i] = false;
+					bulletXArray[i] = 0;
+					bulletYArray[i] = 0;
 
 					break;
 				}
 	}
 
 	// Enemy
-	if (isAlive) {
+	if (enemyIsAlive) {
 		glColor3f(1, 0, 0);
 		glBegin(GL_TRIANGLES);
 		glVertex2i(enemyX, enemyY - 20);
@@ -59,11 +63,10 @@ void myDisplay(void) {
 		glColor3f(1, 1, 1);
 	}
 
-
 	// bullet
 	glBegin(GL_LINES);
-	for (int i = 0; i < shotLim; i++) {
-		if (bulletXArray[i] > 0 && bulletYArray[i] > 0) {
+	for (int i = 0; i < bulletLimit; i++) {
+		if (bulletIsAlive) {
 			glVertex2i(bulletXArray[i], bulletYArray[i]);
 			glVertex2i(bulletXArray[i], bulletYArray[i] + 10);
 		}
@@ -75,10 +78,11 @@ void myDisplay(void) {
 
 void myMouse(int button, int state, int x, int y) {
 	if (state == 0) {
-		for (int i = 0; i < shotLim; i++) {
-			if (bulletXArray[i] == 0 && bulletYArray[i] == 0) {
+		for (int i = 0; i < bulletLimit; i++) {
+			if (!bulletIsAlive[i]) {
 				bulletXArray[i] = x;
 				bulletYArray[i] = height - y;
+				bulletIsAlive[i] = true;
 
 				break;
 			}
@@ -94,14 +98,16 @@ void myMouse(int button, int state, int x, int y) {
 }
 
 void myTimer(int value) {
-	for (int i = 0; i < shotLim; i++) {
-		if (bulletYArray[i] > 400) {
-			bulletYArray[i] = 0;
-			bulletXArray[i] = 0;
-		}
+	for (int i = 0; i < bulletLimit; i++) {
+		if (bulletIsAlive[i])
+			if (bulletYArray[i] > 400) {
+				bulletYArray[i] = 0;
+				bulletXArray[i] = 0;
+				bulletIsAlive[i] = false;
+			}
 
-		if (bulletYArray[i] > 0)
-			bulletYArray[i] += 6;
+			if (bulletYArray[i] > 0)
+				bulletYArray[i] += 6;
 	}
 
 	glutPostRedisplay();
