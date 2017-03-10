@@ -79,24 +79,26 @@ void myDisplay(void) {
 }
 
 void myMouse(int button, int state, int x, int y) {
-	if (state == 0) {
-		for (int i = 0; i < bulletLimit; i++) {
-			if (!bulletIsAlive[i]) {
-				bulletXArray[i] = x;
-				bulletYArray[i] = height - y;
-				bulletIsAlive[i] = true;
 
-				break;
+	if (GLUT_LEFT_BUTTON == button)
+		if (state == 0) {
+			for (int i = 0; i < bulletLimit; i++) {
+				if (!bulletIsAlive[i]) {
+					bulletXArray[i] = x;
+					bulletYArray[i] = height - y;
+					bulletIsAlive[i] = true;
+
+					break;
+				}
 			}
+
+			mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+			mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
+			arioY -= 3;
 		}
 
-		mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-		mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
-
-		arioY -= 3;
-	}
-
-	glutPostRedisplay();
+		glutPostRedisplay();
 }
 
 void myTimer(int value) {
