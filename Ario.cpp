@@ -1,16 +1,15 @@
 #include <stdlib.h>
-#include <fmod/fmod.h>
-#include <fmod/fmod_errors.h>
 #include <iostream>
 #include <gl/glut.h>
 #include <ctime>
-
+#include "FMOD_API/inc/fmod.hpp"
+#include "FMOD_API/inc/fmod_errors.h"
 using namespace std;
 
-#pragma comment(lib, "fmod.lib")
+#pragma comment(lib, "FMOD_API/lib/fmodex_vc.lib")
 
-FSOUND_STREAM* shotSound = NULL;
-FSOUND_STREAM* explosion = NULL;
+FMOD::System *mySystem;
+FMOD::Sound *mySound;
 
 GLuint width = 400;
 GLuint height = 400;
@@ -43,8 +42,9 @@ void myDisplay(void) {
 		if (bulletIsAlive[i] && enemyIsAlive)
 			if (bulletXArray[i] > enemyX - 20 && bulletXArray[i] < enemyX + 20)
 				if (bulletYArray[i] > enemyY - 20 && bulletYArray[i] < enemyY) {
-					explosion = FSOUND_Stream_Open("explosion.mp3", FSOUND_2D, 0, 0);
-					FSOUND_Stream_Play(0, explosion);
+					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
 					enemyIsAlive = false;
 					bulletIsAlive[i] = false;
 					bulletXArray[i] = 0;
@@ -90,8 +90,8 @@ void myMouse(int button, int state, int x, int y) {
 			}
 		}
 
-		shotSound = FSOUND_Stream_Open("shot.mp3", FSOUND_2D, 0, 0);
-		FSOUND_Stream_Play(0, shotSound);
+		mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+		mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
 		arioY -= 3;
 	}
@@ -159,12 +159,9 @@ void myReshape(int w, int h) {
 void main(int argc, char* argv[]) {
 	//cin.get();
 
-	if (FSOUND_Init(44000, 64, 0) == 0) {
-		//Valid maxRate Range:    4000 to 65535   up to 1024
-		cout << "[ERROR] Could not initialise fmod\n";
+	FMOD::System_Create(&mySystem);
 
-		return;
-	}
+	mySystem->init(32, FMOD_INIT_NORMAL, 0);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -180,10 +177,4 @@ void main(int argc, char* argv[]) {
 	glutReshapeFunc(myReshape);
 
 	glutMainLoop();
-
-	FSOUND_Stream_Stop(shotSound);
-	FSOUND_Stream_Close(shotSound);
-	FSOUND_Stream_Stop(explosion);
-	FSOUND_Stream_Close(explosion);
-	FSOUND_Close();
 }
