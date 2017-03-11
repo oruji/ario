@@ -11,26 +11,26 @@ using namespace std;
 FMOD::System *mySystem;
 FMOD::Sound *mySound;
 
-const GLuint width = 800;
-const GLuint height = 600;
+const int width = 800;
+const int height = 600;
 
-GLuint arioX;
-GLuint arioY;
+int arioX;
+int arioY;
 GLboolean arioIsAlive = true;
 
-GLuint arioBulletsY[100] = {};
-GLuint arioBulletsX[100] = {};
-GLboolean arioBulletsIsAlive[100] = {false};
-GLuint arioBulletLimit = 100;
+const int arioBulletLimit = 50;
+int arioBulletsY[arioBulletLimit] = {};
+int arioBulletsX[arioBulletLimit] = {};
+GLboolean arioBulletsIsAlive[arioBulletLimit] = {false};
 
-GLuint enemyX = 200;
-GLuint enemyY = 350;
+int enemyX = 200;
+int enemyY = 350;
 GLboolean enemyIsAlive = true;
 
-GLuint enemyBulletsY[20] = {};
-GLuint enemyBulletsX[20] = {};
-GLboolean enemyBulletsIsAlive[20] = {false};
-GLuint enemyBulletLimit = 20;
+const int enemyBulletLimit = 50;
+int enemyBulletsY[enemyBulletLimit] = {};
+int enemyBulletsX[enemyBulletLimit] = {};
+GLboolean enemyBulletsIsAlive[enemyBulletLimit] = {false};
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -131,12 +131,14 @@ void myKeyboard(unsigned char key, int x, int y) {
 					enemyBulletsY[i] = enemyY;
 					enemyBulletsIsAlive[i] = true;
 
+					mySystem -> createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+					mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
 					break;
 				}
 			}
 
-			mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-			mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
 
 			break;
 		default:
@@ -158,14 +160,14 @@ void myMouse(int button, int state, int x, int y) {
 						arioBulletsY[i] = height - y;
 						arioBulletsIsAlive[i] = true;
 
+						mySystem -> createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+						mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
+						arioY -= 3;
+
 						break;
 					}
 				}
-
-				mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-				mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
-
-				arioY -= 3;
 			}
 		}
 	}
@@ -191,7 +193,7 @@ void myTimer(int value) {
 	// enemy bullets movement
 	for (int i = 0; i < enemyBulletLimit; i++) {
 		if (enemyBulletsIsAlive[i])
-			if (enemyBulletsY[i] == 0) {
+ 			if (enemyBulletsY[i] < 0) {
 				enemyBulletsY[i] = 0;
 				enemyBulletsX[i] = 0;
 				enemyBulletsIsAlive[i] = false;
