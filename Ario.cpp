@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <iostream>
 #include <gl/glut.h>
-#include <ctime>
 #include "FMOD_API/inc/fmod.hpp"
 #include "FMOD_API/inc/fmod_errors.h"
 
@@ -12,8 +11,8 @@ using namespace std;
 FMOD::System *mySystem;
 FMOD::Sound *mySound;
 
-GLuint width = 400;
-GLuint height = 400;
+const GLuint width = 800;
+const GLuint height = 600;
 
 GLuint arioX;
 GLuint arioY;
@@ -25,7 +24,7 @@ GLboolean arioBulletsIsAlive[100] = {false};
 GLuint arioBulletLimit = 100;
 
 GLuint enemyX = 200;
-GLuint enemyY = 200;
+GLuint enemyY = 350;
 GLboolean enemyIsAlive = true;
 
 GLuint enemyBulletsY[20] = {};
@@ -115,11 +114,43 @@ void myDisplay(void) {
 	glutSwapBuffers();
 }
 
-void myMouse(int button, int state, int x, int y) {
+void myKeyboard(unsigned char key, int x, int y) {
+	if (enemyIsAlive) {
+		switch (key) {
+		case 97:
+			enemyX -= 10;
+			break;
 
+		case 100:
+			enemyX += 10;
+			break;
+		case 32:
+			for (int i = 0; i < enemyBulletLimit; i++) {
+				if (!enemyBulletsIsAlive[i]) {
+					enemyBulletsX[i] = enemyX;
+					enemyBulletsY[i] = enemyY;
+					enemyBulletsIsAlive[i] = true;
+
+					break;
+				}
+			}
+
+			mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+			mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
+			break;
+		default:
+			break;
+		}
+	}
+
+	glutPostRedisplay();
+}
+
+void myMouse(int button, int state, int x, int y) {
 	// ario shot
-	if (arioIsAlive)
-		if (GLUT_LEFT_BUTTON == button)
+	if (arioIsAlive) {
+		if (GLUT_LEFT_BUTTON == button) {
 			if (state == 0) {
 				for (int i = 0; i < arioBulletLimit; i++) {
 					if (!arioBulletsIsAlive[i]) {
@@ -136,26 +167,10 @@ void myMouse(int button, int state, int x, int y) {
 
 				arioY -= 3;
 			}
+		}
+	}
 
-			// enemy shot
-			if (enemyIsAlive)
-				if (GLUT_RIGHT_BUTTON == button)
-					if (state == 0) {
-						for (int i = 0; i < enemyBulletLimit; i++) {
-							if (!enemyBulletsIsAlive[i]) {
-								enemyBulletsX[i] = enemyX;
-								enemyBulletsY[i] = height - enemyY;
-								enemyBulletsIsAlive[i] = true;
-
-								break;
-							}
-						}
-
-						mySystem->createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-						mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
-					}
-
-					glutPostRedisplay();
+	glutPostRedisplay();
 }
 
 void myTimer(int value) {
@@ -163,7 +178,7 @@ void myTimer(int value) {
 	// ario bullets movement
 	for (int i = 0; i < arioBulletLimit; i++) {
 		if (arioBulletsIsAlive[i])
-			if (arioBulletsY[i] > 400) {
+			if (arioBulletsY[i] > height) {
 				arioBulletsY[i] = 0;
 				arioBulletsX[i] = 0;
 				arioBulletsIsAlive[i] = false;
@@ -235,12 +250,14 @@ void main(int argc, char* argv[]) {
 
 	FMOD::System_Create(&mySystem);
 
-	mySystem->init(32, FMOD_INIT_NORMAL, 0);
+	mySystem -> init(32, FMOD_INIT_NORMAL, 0);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(width, height);
+
 	glutCreateWindow("Ario 0.0.1");
+	glutPositionWindow(300, 100);
 	glutSetCursor(GLUT_CURSOR_NONE);
 
 	glutDisplayFunc(myDisplay);
@@ -248,7 +265,10 @@ void main(int argc, char* argv[]) {
 	glutTimerFunc(20, myTimer, 1);
 	glutPassiveMotionFunc(myPassiveMotion);
 	glutMotionFunc(myMotion);
-	glutReshapeFunc(myReshape);
+	//glutReshapeFunc(myReshape);
+	glutKeyboardFunc(myKeyboard);
+
+	gluOrtho2D(0, 800, 0, 600);
 
 	glutMainLoop();
 }
