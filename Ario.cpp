@@ -23,14 +23,60 @@ int arioBulletsY[arioBulletLimit] = {};
 int arioBulletsX[arioBulletLimit] = {};
 GLboolean arioBulletsIsAlive[arioBulletLimit] = {false};
 
-int enemyX = 200;
-int enemyY = 350;
+float enemyX = 400;
+float enemyY = 500;
 GLboolean enemyIsAlive = true;
+bool isKeyUp = true;
 
 const int enemyBulletLimit = 50;
 int enemyBulletsY[enemyBulletLimit] = {};
 int enemyBulletsX[enemyBulletLimit] = {};
 GLboolean enemyBulletsIsAlive[enemyBulletLimit] = {false};
+
+bool keyStates[256] = {0};
+
+void myKeyboard(unsigned char key, int x, int y) {  
+	keyStates[key] = true;
+}   
+
+void myKeyboardUp(unsigned char key, int x, int y) { 
+	if (key == ' ')
+		isKeyUp = true;
+
+	keyStates[key] = false;
+} 
+
+void myIdle() {
+	if(keyStates['a']) {
+		enemyX -= 0.1; }
+
+	if(keyStates['d']) {
+		enemyX += 0.1; }
+
+	if(keyStates['w']) {
+		enemyY += 0.1; }
+
+	if(keyStates['s']) {
+		enemyY -= 0.1; }
+
+	if(keyStates[' '] && isKeyUp && enemyIsAlive) {
+		for (int i = 0; i < enemyBulletLimit; i++) {
+			if (!enemyBulletsIsAlive[i]) {
+				enemyBulletsX[i] = enemyX;
+				enemyBulletsY[i] = enemyY;
+				enemyBulletsIsAlive[i] = true;
+				isKeyUp = false;
+
+				mySystem -> createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
+				mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+
+				break;
+			}
+		}	
+	}
+
+	glutPostRedisplay();
+}
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -114,41 +160,6 @@ void myDisplay(void) {
 	glutSwapBuffers();
 }
 
-void myKeyboard(unsigned char key, int x, int y) {
-	if (enemyIsAlive) {
-		switch (key) {
-		case 97:
-			enemyX -= 10;
-			break;
-
-		case 100:
-			enemyX += 10;
-			break;
-		case 32:
-			for (int i = 0; i < enemyBulletLimit; i++) {
-				if (!enemyBulletsIsAlive[i]) {
-					enemyBulletsX[i] = enemyX;
-					enemyBulletsY[i] = enemyY;
-					enemyBulletsIsAlive[i] = true;
-
-					mySystem -> createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-					mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
-
-					break;
-				}
-			}
-
-
-
-			break;
-		default:
-			break;
-		}
-	}
-
-	glutPostRedisplay();
-}
-
 void myMouse(int button, int state, int x, int y) {
 	// ario shot
 	if (arioIsAlive) {
@@ -193,7 +204,7 @@ void myTimer(int value) {
 	// enemy bullets movement
 	for (int i = 0; i < enemyBulletLimit; i++) {
 		if (enemyBulletsIsAlive[i])
- 			if (enemyBulletsY[i] < 0) {
+			if (enemyBulletsY[i] < 0) {
 				enemyBulletsY[i] = 0;
 				enemyBulletsX[i] = 0;
 				enemyBulletsIsAlive[i] = false;
@@ -248,6 +259,7 @@ void myReshape(int w, int h) {
 }
 
 void main(int argc, char* argv[]) {
+
 	//cin.get();
 
 	FMOD::System_Create(&mySystem);
@@ -269,7 +281,8 @@ void main(int argc, char* argv[]) {
 	glutMotionFunc(myMotion);
 	//glutReshapeFunc(myReshape);
 	glutKeyboardFunc(myKeyboard);
-
+	glutKeyboardUpFunc(myKeyboardUp);
+	glutIdleFunc(myIdle);
 	gluOrtho2D(0, 800, 0, 600);
 
 	glutMainLoop();
