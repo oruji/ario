@@ -122,7 +122,7 @@ void myDisplay(void) {
 	for (int i = 0; i < enemyBulletLimit; i++) {
 		if (enemyBulletsIsAlive[i] && arioIsAlive)
 			if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20)
-				if (enemyBulletsY[i] > arioY - 20 && enemyBulletsY[i] < arioY) {
+				if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20) {
 					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
 					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
@@ -152,7 +152,7 @@ void myDisplay(void) {
 	for (int i = 0; i < enemyBulletLimit; i++) {
 		if (enemyBulletsIsAlive[i]) {
 			glVertex2i(enemyBulletsX[i], enemyBulletsY[i]);
-			glVertex2i(enemyBulletsX[i], enemyBulletsY[i] + 10);
+			glVertex2i(enemyBulletsX[i], enemyBulletsY[i] - 10);
 		}
 	}
 	glEnd();
