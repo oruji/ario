@@ -105,9 +105,10 @@ void myDisplay(void) {
 	for (int i = 0; i < arioBulletLimit; i++) {
 		if (arioBulletsIsAlive[i] && enemyIsAlive)
 			if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20)
-				if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY) {
-					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+				if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY || 
+					arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY) {
+					mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+					mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
 					enemyIsAlive = false;
 					arioBulletsIsAlive[i] = false;
@@ -122,7 +123,8 @@ void myDisplay(void) {
 	for (int i = 0; i < enemyBulletLimit; i++) {
 		if (enemyBulletsIsAlive[i] && arioIsAlive)
 			if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20)
-				if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20) {
+				if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || 
+					enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
 					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
 					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
