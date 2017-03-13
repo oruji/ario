@@ -159,6 +159,8 @@ void myDisplay(void) {
 	}
 	glEnd();
 
+	mySystem -> update();
+
 	glutSwapBuffers();
 }
 
