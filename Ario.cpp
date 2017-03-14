@@ -20,9 +20,9 @@ int arioY;
 GLboolean arioIsAlive = true;
 bool arioShake = false;
 int arioShakeCounter = 0;
+
 bool arioInControl = true;
 bool arioInvisible = false;
-
 chrono :: steady_clock :: time_point arioDeadStart;
 chrono :: steady_clock :: time_point arioInControlStart;
 chrono :: steady_clock :: time_point arioInvisibleStart;
@@ -44,6 +44,12 @@ int enemyBulletsY[enemyBulletLimit] = {};
 int enemyBulletsX[enemyBulletLimit] = {};
 GLboolean enemyBulletsIsAlive[enemyBulletLimit] = {false};
 
+bool enemyInControl = true;
+bool enemyInvisible = false;
+chrono :: steady_clock :: time_point enemyDeadStart;
+chrono :: steady_clock :: time_point enemyInControlStart;
+chrono :: steady_clock :: time_point enemyInvisibleStart;
+
 bool keyStates[256] = {0};
 
 bool isElapsed(chrono :: steady_clock :: time_point start, int dur) {
@@ -62,19 +68,19 @@ void myKeyboardUp(unsigned char key, int x, int y) {
 } 
 
 void myIdle() {
-	if(keyStates['a'] || keyStates['A']) {
+	if((keyStates['a'] || keyStates['A']) && enemyInControl) {
 		enemyX -= 0.1; }
 
-	if(keyStates['d'] || keyStates['D']) {
+	if((keyStates['d'] || keyStates['D']) && enemyInControl) {
 		enemyX += 0.1; }
 
-	if(keyStates['w'] || keyStates['W']) {
+	if((keyStates['w'] || keyStates['W']) && enemyInControl) {
 		enemyY += 0.1; }
 
-	if(keyStates['s'] || keyStates['S']) {
+	if((keyStates['s'] || keyStates['S']) && enemyInControl) {
 		enemyY -= 0.1; }
 
-	if(keyStates[' '] && isKeyUp && enemyIsAlive) {
+	if(keyStates[' '] && isKeyUp && enemyIsAlive && enemyInControl) {
 		for (int i = 0; i < enemyBulletLimit; i++) {
 			if (!enemyBulletsIsAlive[i]) {
 				enemyBulletsX[i] = enemyX;
@@ -124,6 +130,14 @@ void myDisplay(void) {
 		if (isElapsed(arioInvisibleStart, 2000)) {
 			arioInvisible = false; } }
 
+	if (!enemyInControl) {
+		if (isElapsed(enemyInControlStart, 500)) {
+			enemyInControl = true; } }
+
+	if (enemyInvisible) {
+		if (isElapsed(enemyInvisibleStart, 2000)) {
+			enemyInvisible = false; } }
+
 	// Ario
 	if (arioIsAlive) {
 		glColor3f(1, 1, 1);
@@ -148,7 +162,7 @@ void myDisplay(void) {
 		arioInControlStart = chrono :: system_clock :: now(); 
 		arioInvisible = true;
 		arioInvisibleStart = chrono :: system_clock :: now(); }
-	
+
 	// Invisible Circle
 	if (arioInvisible) {
 		drawHollowCircle(arioX, arioY + 5, 50); }
@@ -160,25 +174,52 @@ void myDisplay(void) {
 		glVertex2i(enemyX, enemyY - 20);
 		glVertex2i(enemyX + 20, enemyY);
 		glVertex2i(enemyX - 20, enemyY);
-		glEnd();
-	}
+		glEnd(); }
+
+
+	else if (isElapsed(enemyDeadStart, 2000)) {
+		enemyX = width / 2;
+		enemyY = height + 20;
+		glColor3f(1, 1, 1);
+		glBegin(GL_TRIANGLES);
+		glVertex2i(enemyX, enemyY - 20);
+		glVertex2i(enemyX + 20, enemyY);
+		glVertex2i(enemyX - 20, enemyY);
+		glEnd(); 
+
+		enemyIsAlive = true; 
+		enemyInControl = false; 
+		enemyInControlStart = chrono :: system_clock :: now(); 
+		enemyInvisible = true;
+		enemyInvisibleStart = chrono :: system_clock :: now(); }
+
+	// Invisible Circle
+	if (enemyInvisible) {
+		drawHollowCircle(enemyX, enemyY - 5, 50); }
+
 
 	// ario's bullets strike to enemy
-	for (int i = 0; i < arioBulletLimit; i++) {
-		if (arioBulletsIsAlive[i] && enemyIsAlive)
-			if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20)
-				if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY || 
-					arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY) {
-						mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-						mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+	if (enemyIsAlive && !enemyInvisible) {
+		for (int i = 0; i < arioBulletLimit; i++) {
+			if (arioBulletsIsAlive[i]) {
+				if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20) {
+					if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY || 
+						arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY) {
+							mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+							mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
-						enemyIsAlive = false;
-						arioBulletsIsAlive[i] = false;
-						arioBulletsX[i] = 0;
-						arioBulletsY[i] = 0;
+							enemyIsAlive = false;
+							arioBulletsIsAlive[i] = false;
+							arioBulletsX[i] = 0;
+							arioBulletsY[i] = 0;
 
-						break;
+							enemyDeadStart = chrono :: steady_clock :: now();
+
+							break;
+					}
 				}
+			}
+		}
 	}
 
 	// enemy's bullets strike to ario
@@ -262,8 +303,10 @@ void myMouse(int button, int state, int x, int y) {
 void myTimer(int value) {
 
 	if (arioIsAlive && !arioInControl) {
-		arioY += 3; }
+		arioY += 4; }
 
+	if (enemyIsAlive && !enemyInControl) {
+		enemyY -= 4; }
 
 	if (arioShake) {
 		arioShakeCounter ++; }
