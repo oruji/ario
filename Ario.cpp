@@ -3,13 +3,14 @@
 #include <gl/glut.h>
 #include "FMOD_API/inc/fmod.hpp"
 #include "FMOD_API/inc/fmod_errors.h"
+#include <chrono>
 
 using namespace std;
 
 #pragma comment(lib, "FMOD_API/lib/fmodex_vc.lib")
 
-FMOD::System *mySystem;
-FMOD::Sound *mySound;
+FMOD :: System *mySystem;
+FMOD :: Sound *mySound;
 
 const int width = 800;
 const int height = 600;
@@ -19,6 +20,12 @@ int arioY;
 GLboolean arioIsAlive = true;
 bool arioShake = false;
 int arioShakeCounter = 0;
+bool arioInControl = true;
+bool arioInvisible = false;
+
+chrono :: steady_clock :: time_point arioDeadStart;
+chrono :: steady_clock :: time_point arioInControlStart;
+chrono :: steady_clock :: time_point arioInvisibleStart;
 
 const int arioBulletLimit = 50;
 int arioBulletsY[arioBulletLimit] = {};
@@ -39,9 +46,13 @@ GLboolean enemyBulletsIsAlive[enemyBulletLimit] = {false};
 
 bool keyStates[256] = {0};
 
+bool isElapsed(chrono :: steady_clock :: time_point start, int dur) {
+	return chrono :: duration_cast<chrono :: milliseconds>(chrono :: steady_clock :: now() - start).count() > dur;
+}
+
 void myKeyboard(unsigned char key, int x, int y) {  
 	keyStates[key] = true;
-}   
+}  
 
 void myKeyboardUp(unsigned char key, int x, int y) { 
 	if (key == ' ')
@@ -85,8 +96,33 @@ void myIdle() {
 	glutPostRedisplay();
 }
 
+void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius){
+	int i;
+	int lineAmount = 100; //# of triangles used to draw circle
+
+	//GLfloat radius = 0.8f; //radius
+	GLfloat twicePi = 2.0f * 3.1415;
+
+	glBegin(GL_LINE_LOOP);
+	for(i = 0; i <= lineAmount;i++) { 
+		glVertex2f(
+			x + (radius * cos(i *  twicePi / lineAmount)), 
+			y + (radius* sin(i * twicePi / lineAmount))
+			);
+	}
+	glEnd();
+}
+
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (!arioInControl) {
+		if (isElapsed(arioInControlStart, 500)) {
+			arioInControl = true; } }
+
+	if (arioInvisible) {
+		if (isElapsed(arioInvisibleStart, 2000)) {
+			arioInvisible = false; } }
 
 	// Ario
 	if (arioIsAlive) {
@@ -95,12 +131,30 @@ void myDisplay(void) {
 		glVertex2i(arioX - 20, arioY);
 		glVertex2i(arioX + 20, arioY);
 		glVertex2i(arioX, arioY + 20);
-		glEnd();
-	}
+		glEnd(); } 
+
+	else if (isElapsed(arioDeadStart, 2000)) {
+		arioX = width / 2;
+		arioY = -20;
+		glColor3f(1, 1, 1);
+		glBegin(GL_TRIANGLES);
+		glVertex2i(arioX - 20, arioY);
+		glVertex2i(arioX + 20, arioY);
+		glVertex2i(arioX, arioY + 20);
+		glEnd(); 
+
+		arioIsAlive = true; 
+		arioInControl = false; 
+		arioInControlStart = chrono :: system_clock :: now(); 
+		arioInvisible = true;
+		arioInvisibleStart = chrono :: system_clock :: now(); }
+	
+	// Invisible Circle
+	if (arioInvisible) {
+		drawHollowCircle(arioX, arioY + 5, 50); }
 
 	// Enemy
 	if (enemyIsAlive) {
-
 		glColor3f(1, 0, 0);
 		glBegin(GL_TRIANGLES);
 		glVertex2i(enemyX, enemyY - 20);
@@ -128,21 +182,27 @@ void myDisplay(void) {
 	}
 
 	// enemy's bullets strike to ario
-	for (int i = 0; i < enemyBulletLimit; i++) {
-		if (enemyBulletsIsAlive[i] && arioIsAlive)
-			if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20)
-				if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || 
-					enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
-						mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-						mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+	if (arioIsAlive && !arioInvisible) {
+		for (int i = 0; i < enemyBulletLimit; i++) {
+			if (enemyBulletsIsAlive[i]) {
+				if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20) {
+					if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || 
+						enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
+							mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+							mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
-						arioIsAlive = false;
-						enemyBulletsIsAlive[i] = false;
-						enemyBulletsX[i] = 0;
-						enemyBulletsY[i] = 0;
+							arioIsAlive = false;
+							enemyBulletsIsAlive[i] = false;
+							enemyBulletsX[i] = 0;
+							enemyBulletsY[i] = 0;
 
-						break;
+							arioDeadStart = chrono :: steady_clock :: now();
+
+							break;
+					}
 				}
+			}
+		}
 	}
 
 	// ario bullet
@@ -174,7 +234,7 @@ void myDisplay(void) {
 
 void myMouse(int button, int state, int x, int y) {
 	// ario shot
-	if (arioIsAlive) {
+	if (arioIsAlive && arioInControl) {
 		if (GLUT_LEFT_BUTTON == button) {
 			if (state == 0) {
 				for (int i = 0; i < arioBulletLimit; i++) {
@@ -200,6 +260,9 @@ void myMouse(int button, int state, int x, int y) {
 }
 
 void myTimer(int value) {
+
+	if (arioIsAlive && !arioInControl) {
+		arioY += 3; }
 
 
 	if (arioShake) {
@@ -250,17 +313,19 @@ void myTimer(int value) {
 }
 
 void myPassiveMotion(int x, int y) {
-	arioX = x;
-	arioY = (height - y);
+	if (arioIsAlive && arioInControl) {
+		arioX = x;
+		arioY = (height - y);
 
-	glutPostRedisplay();
+		glutPostRedisplay(); }
 }
 
 void myMotion(int x, int y) {
-	arioX = x;
-	arioY = (height - y);
+	if (arioIsAlive && arioInControl) {
+		arioX = x;
+		arioY = (height - y);
 
-	glutPostRedisplay();
+		glutPostRedisplay(); }
 }
 
 void myReshape(int w, int h) {
@@ -290,7 +355,6 @@ void myReshape(int w, int h) {
 }
 
 void main(int argc, char* argv[]) {
-
 	//cin.get();
 
 	FMOD::System_Create(&mySystem);
