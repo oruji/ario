@@ -16,26 +16,26 @@ FMOD :: Sound *mySound;
 const int width = 800;
 const int height = 600;
 
-int arioX;
-int arioY;
+float arioX = width / 2;
+float arioY = -20;
 GLboolean arioIsAlive = true;
 bool arioShake = false;
 int arioShakeCounter = 0;
 int arioScore = 0;
 
-bool arioInControl = true;
-bool arioInvisible = false;
+bool arioInControl = false;
+bool arioInvisible = true;
 chrono :: steady_clock :: time_point arioDeadStart;
-chrono :: steady_clock :: time_point arioInControlStart;
-chrono :: steady_clock :: time_point arioInvisibleStart;
+chrono :: steady_clock :: time_point arioInControlStart = chrono :: steady_clock :: now();
+chrono :: steady_clock :: time_point arioInvisibleStart = chrono :: steady_clock :: now();
 
 const int arioBulletLimit = 50;
 int arioBulletsY[arioBulletLimit] = {};
 int arioBulletsX[arioBulletLimit] = {};
 GLboolean arioBulletsIsAlive[arioBulletLimit] = {false};
 
-float enemyX = 400;
-float enemyY = 500;
+float enemyX = width / 2;
+float enemyY = height + 20;
 GLboolean enemyIsAlive = true;
 bool isKeyUp = true;
 bool enemyShake = false;
@@ -47,11 +47,11 @@ int enemyBulletsY[enemyBulletLimit] = {};
 int enemyBulletsX[enemyBulletLimit] = {};
 GLboolean enemyBulletsIsAlive[enemyBulletLimit] = {false};
 
-bool enemyInControl = true;
-bool enemyInvisible = false;
+bool enemyInControl = false;
+bool enemyInvisible = true;
 chrono :: steady_clock :: time_point enemyDeadStart;
-chrono :: steady_clock :: time_point enemyInControlStart;
-chrono :: steady_clock :: time_point enemyInvisibleStart;
+chrono :: steady_clock :: time_point enemyInControlStart = chrono :: steady_clock :: now();
+chrono :: steady_clock :: time_point enemyInvisibleStart = chrono :: steady_clock :: now();
 
 bool keyStates[256] = {0};
 
@@ -154,7 +154,7 @@ void myDisplay(void) {
 	emitString(strdup(to_string(enemyScore).c_str()), width - 25, height - 15);
 
 	if (!arioInControl) {
-		if (isElapsed(arioInControlStart, 500)) {
+		if (isElapsed(arioInControlStart, 600)) {
 			arioInControl = true; } }
 
 	if (arioInvisible) {
@@ -162,7 +162,7 @@ void myDisplay(void) {
 			arioInvisible = false; } }
 
 	if (!enemyInControl) {
-		if (isElapsed(enemyInControlStart, 500)) {
+		if (isElapsed(enemyInControlStart, 600)) {
 			enemyInControl = true; } }
 
 	if (enemyInvisible) {
