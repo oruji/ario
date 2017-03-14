@@ -17,6 +17,8 @@ const int height = 600;
 int arioX;
 int arioY;
 GLboolean arioIsAlive = true;
+bool arioShake = false;
+int arioShakeCounter = 0;
 
 const int arioBulletLimit = 50;
 int arioBulletsY[arioBulletLimit] = {};
@@ -27,6 +29,8 @@ float enemyX = 400;
 float enemyY = 500;
 GLboolean enemyIsAlive = true;
 bool isKeyUp = true;
+bool enemyShake = false;
+int enemyShakeCounter = 0;
 
 const int enemyBulletLimit = 50;
 int enemyBulletsY[enemyBulletLimit] = {};
@@ -70,6 +74,9 @@ void myIdle() {
 				mySystem -> createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
 				mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
+				enemyY += 3;
+				enemyShake = true;
+
 				break;
 			}
 		}	
@@ -108,15 +115,15 @@ void myDisplay(void) {
 			if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20)
 				if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY || 
 					arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY) {
-					mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-					mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+						mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+						mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
-					enemyIsAlive = false;
-					arioBulletsIsAlive[i] = false;
-					arioBulletsX[i] = 0;
-					arioBulletsY[i] = 0;
+						enemyIsAlive = false;
+						arioBulletsIsAlive[i] = false;
+						arioBulletsX[i] = 0;
+						arioBulletsY[i] = 0;
 
-					break;
+						break;
 				}
 	}
 
@@ -126,15 +133,15 @@ void myDisplay(void) {
 			if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20)
 				if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || 
 					enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
-					mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-					mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+						mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+						mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
-					arioIsAlive = false;
-					enemyBulletsIsAlive[i] = false;
-					enemyBulletsX[i] = 0;
-					enemyBulletsY[i] = 0;
+						arioIsAlive = false;
+						enemyBulletsIsAlive[i] = false;
+						enemyBulletsX[i] = 0;
+						enemyBulletsY[i] = 0;
 
-					break;
+						break;
 				}
 	}
 
@@ -180,6 +187,7 @@ void myMouse(int button, int state, int x, int y) {
 						mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
 						arioY -= 3;
+						arioShake = true;
 
 						break;
 					}
@@ -192,6 +200,24 @@ void myMouse(int button, int state, int x, int y) {
 }
 
 void myTimer(int value) {
+
+
+	if (arioShake) {
+		arioShakeCounter ++; }
+
+	if (arioShakeCounter == 4) {
+		arioY += 3; 
+		arioShakeCounter = 0;
+		arioShake = false; }
+
+
+	if(enemyShake) {
+		enemyShakeCounter ++; }
+
+	if(enemyShakeCounter == 4) {
+		enemyY -= 3;
+		enemyShakeCounter = 0;
+		enemyShake = false; }
 
 	// ario bullets movement
 	for (int i = 0; i < arioBulletLimit; i++) {
