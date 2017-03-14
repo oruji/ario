@@ -4,6 +4,7 @@
 #include "FMOD_API/inc/fmod.hpp"
 #include "FMOD_API/inc/fmod_errors.h"
 #include <chrono>
+#include <string>
 
 using namespace std;
 
@@ -20,6 +21,7 @@ int arioY;
 GLboolean arioIsAlive = true;
 bool arioShake = false;
 int arioShakeCounter = 0;
+int arioScore = 0;
 
 bool arioInControl = true;
 bool arioInvisible = false;
@@ -38,6 +40,7 @@ GLboolean enemyIsAlive = true;
 bool isKeyUp = true;
 bool enemyShake = false;
 int enemyShakeCounter = 0;
+int enemyScore = 0;
 
 const int enemyBulletLimit = 50;
 int enemyBulletsY[enemyBulletLimit] = {};
@@ -51,6 +54,22 @@ chrono :: steady_clock :: time_point enemyInControlStart;
 chrono :: steady_clock :: time_point enemyInvisibleStart;
 
 bool keyStates[256] = {0};
+
+#define FONT GLUT_BITMAP_8_BY_13
+#define CHAR_W 8
+
+void emitString(char *s, int tx, int ty) {
+	int x = tx;
+	int y = ty;
+
+	while(*s) {
+		glRasterPos2i(x, y);
+		glutBitmapCharacter(FONT, *s);
+		x += CHAR_W;
+
+		++s;
+	}
+}
 
 bool isElapsed(chrono :: steady_clock :: time_point start, int dur) {
 	return chrono :: duration_cast<chrono :: milliseconds>(chrono :: steady_clock :: now() - start).count() > dur;
@@ -121,6 +140,12 @@ void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius){
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// ario scores
+	emitString(strdup(to_string(arioScore).c_str()), 10, 10);
+
+	// enemy scores
+	emitString(strdup(to_string(enemyScore).c_str()), width - 25, height - 15);
 
 	if (!arioInControl) {
 		if (isElapsed(arioInControlStart, 500)) {
@@ -215,6 +240,8 @@ void myDisplay(void) {
 
 							enemyDeadStart = chrono :: steady_clock :: now();
 
+							arioScore ++;
+
 							break;
 					}
 				}
@@ -238,6 +265,7 @@ void myDisplay(void) {
 							enemyBulletsY[i] = 0;
 
 							arioDeadStart = chrono :: steady_clock :: now();
+							enemyScore ++;
 
 							break;
 					}
@@ -398,6 +426,7 @@ void myReshape(int w, int h) {
 }
 
 void main(int argc, char* argv[]) {
+
 	//cin.get();
 
 	FMOD::System_Create(&mySystem);
