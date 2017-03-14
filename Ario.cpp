@@ -88,16 +88,21 @@ void myKeyboardUp(unsigned char key, int x, int y) {
 
 void myIdle() {
 	if((keyStates['a'] || keyStates['A']) && enemyInControl) {
-		enemyX -= 0.1; }
+		if (enemyX > 0)
+			enemyX -= 0.1; }
 
 	if((keyStates['d'] || keyStates['D']) && enemyInControl) {
-		enemyX += 0.1; }
+		if (enemyX < width)
+			enemyX += 0.1; }
 
 	if((keyStates['w'] || keyStates['W']) && enemyInControl) {
-		enemyY += 0.1; }
+		if (enemyY < height)
+			enemyY += 0.1; }
 
 	if((keyStates['s'] || keyStates['S']) && enemyInControl) {
-		enemyY -= 0.1; }
+		if (enemyY > 20)
+
+			enemyY -= 0.1; }
 
 	if(keyStates[' '] && isKeyUp && enemyIsAlive && enemyInControl) {
 		for (int i = 0; i < enemyBulletLimit; i++) {
@@ -142,6 +147,7 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// ario scores
+	glColor3f(1, 1, 1);
 	emitString(strdup(to_string(arioScore).c_str()), 10, 10);
 
 	// enemy scores
@@ -165,7 +171,7 @@ void myDisplay(void) {
 
 	// Ario
 	if (arioIsAlive) {
-		glColor3f(1, 1, 1);
+		glColor3f(0, 1, 0);
 		glBegin(GL_TRIANGLES);
 		glVertex2i(arioX - 20, arioY);
 		glVertex2i(arioX + 20, arioY);
@@ -275,7 +281,7 @@ void myDisplay(void) {
 	}
 
 	// ario bullet
-	glColor3f(1, 1, 1);
+	glColor3f(0, 1, 0);
 	glBegin(GL_LINES);
 	for (int i = 0; i < arioBulletLimit; i++) {
 		if (arioBulletsIsAlive[i]) {
