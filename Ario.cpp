@@ -47,16 +47,16 @@ void myKeyboardUp(unsigned char key, int x, int y) {
 } 
 
 void myIdle() {
-	if(keyStates['a']) {
+	if(keyStates['a'] || keyStates['A']) {
 		enemyX -= 0.1; }
 
-	if(keyStates['d']) {
+	if(keyStates['d'] || keyStates['D']) {
 		enemyX += 0.1; }
 
-	if(keyStates['w']) {
+	if(keyStates['w'] || keyStates['W']) {
 		enemyY += 0.1; }
 
-	if(keyStates['s']) {
+	if(keyStates['s'] || keyStates['S']) {
 		enemyY -= 0.1; }
 
 	if(keyStates[' '] && isKeyUp && enemyIsAlive) {
@@ -93,6 +93,7 @@ void myDisplay(void) {
 
 	// Enemy
 	if (enemyIsAlive) {
+
 		glColor3f(1, 0, 0);
 		glBegin(GL_TRIANGLES);
 		glVertex2i(enemyX, enemyY - 20);
