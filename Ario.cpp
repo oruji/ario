@@ -148,10 +148,10 @@ void myDisplay(void) {
 
 	// ario scores
 	glColor3f(1, 1, 1);
-	emitString(strdup(to_string(arioScore).c_str()), 10, 10);
+	emitString(strdup(("Win: " + to_string(arioScore)).c_str()), 10, 10);
 
 	// enemy scores
-	emitString(strdup(to_string(enemyScore).c_str()), width - 25, height - 15);
+	emitString(strdup(("Win: " + to_string(enemyScore)).c_str()), width - 70, height - 15);
 
 	if (!arioInControl) {
 		if (isElapsed(arioInControlStart, 600)) {
@@ -456,6 +456,7 @@ void main(int argc, char* argv[]) {
 	glutKeyboardFunc(myKeyboard);
 	glutKeyboardUpFunc(myKeyboardUp);
 	glutIdleFunc(myIdle);
+	glutWarpPointer(50, 50);
 	gluOrtho2D(0, 800, 0, 600);
 
 	glutMainLoop();
