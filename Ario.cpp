@@ -60,6 +60,8 @@ int enemyInvisibleCounter = 0;
 
 bool keyStates[256] = {0};
 
+bool fullScreen = true;
+
 #define FONT GLUT_BITMAP_8_BY_13
 #define CHAR_W 8
 
@@ -494,6 +496,18 @@ void myReshape(int w, int h) {
 	glLoadIdentity();
 }
 
+void mySpecial(int key, int x, int y) {
+	if (key == GLUT_KEY_F11) {
+		if (fullScreen) {
+			glutFullScreen();
+			fullScreen = !fullScreen;
+
+		} else {
+			glutReshapeWindow(width, height); 
+			glutPositionWindow(300, 100);
+			fullScreen = !fullScreen; }}}
+
+
 void main(int argc, char* argv[]) {
 
 	//cin.get();
@@ -510,16 +524,17 @@ void main(int argc, char* argv[]) {
 	glutPositionWindow(300, 100);
 	glutSetCursor(GLUT_CURSOR_NONE);
 
+
 	glutDisplayFunc(myDisplay);
 	glutMouseFunc(myMouse);
 	glutTimerFunc(20, myTimer, 1);
 	glutPassiveMotionFunc(myPassiveMotion);
 	glutMotionFunc(myMotion);
 	//glutReshapeFunc(myReshape);
+	glutSpecialFunc(mySpecial);
 	glutKeyboardFunc(myKeyboard);
 	glutKeyboardUpFunc(myKeyboardUp);
 	glutIdleFunc(myIdle);
-	glutWarpPointer(50, 50);
 	gluOrtho2D(0, 800, 0, 600);
 
 	glutMainLoop();
