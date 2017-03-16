@@ -5,6 +5,7 @@
 #include "FMOD_API/inc/fmod_errors.h"
 #include <chrono>
 #include <string>
+#include <ctime>
 
 using namespace std;
 
@@ -27,9 +28,10 @@ int arioScore = 0;
 
 bool arioInControl = false;
 bool arioInvisible = true;
-chrono :: steady_clock :: time_point arioDeadStart;
-chrono :: steady_clock :: time_point arioInControlStart = chrono :: steady_clock :: now();
-chrono :: steady_clock :: time_point arioInvisibleStart = chrono :: steady_clock :: now();
+int arioDeadCounter;
+int arioInControlCounter = 0;
+int arioInvisibleCounter = 0;
+
 
 const int arioBulletLimit = 50;
 int arioBulletsY[arioBulletLimit] = {};
@@ -52,9 +54,9 @@ GLboolean enemyBulletsIsAlive[enemyBulletLimit] = {false};
 
 bool enemyInControl = false;
 bool enemyInvisible = true;
-chrono :: steady_clock :: time_point enemyDeadStart;
-chrono :: steady_clock :: time_point enemyInControlStart = chrono :: steady_clock :: now();
-chrono :: steady_clock :: time_point enemyInvisibleStart = chrono :: steady_clock :: now();
+int enemyDeadCounter;
+int enemyInControlCounter = 0;
+int enemyInvisibleCounter = 0;
 
 bool keyStates[256] = {0};
 
@@ -153,8 +155,19 @@ void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius){
 	}
 	glEnd();
 }
-
+long mycounter = 0;
+chrono :: steady_clock :: time_point mytime = chrono :: steady_clock :: now();
 void myDisplay(void) {
+	mycounter ++;
+
+	if(isElapsed(mytime, 1000)) {
+		cout << "myDisplay(): " << mycounter << endl;
+		mycounter = 0;
+		mytime = chrono :: steady_clock :: now();
+	}
+
+
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (pause) {
@@ -170,19 +183,19 @@ void myDisplay(void) {
 		emitString(strdup(("Win: " + to_string(enemyScore)).c_str()), width - 70, height - 15);
 
 		if (!arioInControl) {
-			if (isElapsed(arioInControlStart, 600)) {
+			if (arioInControlCounter >= 30) {
 				arioInControl = true; } }
 
 		if (arioInvisible) {
-			if (isElapsed(arioInvisibleStart, 2000)) {
+			if (arioInvisibleCounter >= 100) {
 				arioInvisible = false; } }
 
 		if (!enemyInControl) {
-			if (isElapsed(enemyInControlStart, 600)) {
+			if (enemyInControlCounter >= 30) {
 				enemyInControl = true; } }
 
 		if (enemyInvisible) {
-			if (isElapsed(enemyInvisibleStart, 2000)) {
+			if (enemyInvisibleCounter >= 100) {
 				enemyInvisible = false; } }
 
 		// Ario
@@ -194,7 +207,7 @@ void myDisplay(void) {
 			glVertex2i(arioX, arioY + 20);
 			glEnd(); } 
 
-		else if (isElapsed(arioDeadStart, 2000)) {
+		else if (arioDeadCounter >= 100) {
 			arioX = width / 2;
 			arioY = -20;
 			glColor3f(1, 1, 1);
@@ -206,9 +219,9 @@ void myDisplay(void) {
 
 			arioIsAlive = true; 
 			arioInControl = false; 
-			arioInControlStart = chrono :: system_clock :: now(); 
+			arioInControlCounter = 0; 
 			arioInvisible = true;
-			arioInvisibleStart = chrono :: system_clock :: now(); }
+			arioInvisibleCounter = 0; }
 
 		// Invisible Circle
 		if (arioInvisible) {
@@ -224,7 +237,7 @@ void myDisplay(void) {
 			glEnd(); }
 
 
-		else if (isElapsed(enemyDeadStart, 2000)) {
+		else if (enemyDeadCounter >= 100) {
 			enemyX = width / 2;
 			enemyY = height + 20;
 			glColor3f(1, 1, 1);
@@ -236,9 +249,9 @@ void myDisplay(void) {
 
 			enemyIsAlive = true; 
 			enemyInControl = false; 
-			enemyInControlStart = chrono :: system_clock :: now(); 
+			enemyInControlCounter = 0; 
 			enemyInvisible = true;
-			enemyInvisibleStart = chrono :: system_clock :: now(); }
+			enemyInvisibleCounter = 0; }
 
 		// Invisible Circle
 		if (enemyInvisible) {
@@ -260,7 +273,7 @@ void myDisplay(void) {
 								arioBulletsX[i] = 0;
 								arioBulletsY[i] = 0;
 
-								enemyDeadStart = chrono :: steady_clock :: now();
+								enemyDeadCounter = 0;
 
 								arioScore ++;
 
@@ -278,15 +291,15 @@ void myDisplay(void) {
 					if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20) {
 						if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || 
 							enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
-								mySystem->createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-								mySystem->playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+								mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
+								mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
 
 								arioIsAlive = false;
 								enemyBulletsIsAlive[i] = false;
 								enemyBulletsX[i] = 0;
 								enemyBulletsY[i] = 0;
 
-								arioDeadStart = chrono :: steady_clock :: now();
+								arioDeadCounter = 0;
 								enemyScore ++;
 
 								break;
@@ -352,27 +365,56 @@ void myMouse(int button, int state, int x, int y) {
 	}
 }
 
+
+long mycountertimer = 0;
+chrono :: steady_clock :: time_point mytimetimer = chrono :: steady_clock :: now();
+
 void myTimer(int value) {
-	cout << pause;
+	mycountertimer ++;
+	if(isElapsed(mytimetimer, 1000)) {
+		cout << "myTimer(): " << mycountertimer << endl;
+		mycountertimer = 0;
+		mytimetimer = chrono :: steady_clock :: now();
+	}
+
+
 	if (!pause) {
+
+		if (!arioIsAlive) {
+			arioDeadCounter ++; }
+
+		if (!enemyIsAlive) {
+			enemyDeadCounter ++; }
+
+		if (!arioInControl) {
+			arioInControlCounter ++; }
+
+		if (arioInvisible) {
+			arioInvisibleCounter ++; }
+
+		if (!enemyInControl) {
+			enemyInControlCounter ++; }
+
+		if (enemyInvisible) {
+			enemyInvisibleCounter ++; }
+
 		if (arioIsAlive && !arioInControl) {
 			arioY += 4; }
 
 		if (enemyIsAlive && !enemyInControl) {
 			enemyY -= 4; }
 
+		// ario shake
 		if (arioShake) {
 			arioShakeCounter ++; }
-
 		if (arioShakeCounter == 4) {
 			arioY += 3; 
 			arioShakeCounter = 0;
 			arioShake = false; }
 
-
+		// enemy shake
 		if(enemyShake) {
 			enemyShakeCounter ++; }
-
 		if(enemyShakeCounter == 4) {
 			enemyY -= 3;
 			enemyShakeCounter = 0;
