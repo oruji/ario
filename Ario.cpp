@@ -7,9 +7,9 @@
 #include <string>
 #include <ctime>
 
-using namespace std;
-
 #pragma comment(lib, "FMOD_API/lib/fmodex_vc.lib")
+
+using namespace std;
 
 bool pause = false;
 
@@ -17,7 +17,7 @@ FMOD :: System *mySystem;
 FMOD :: Sound *mySound;
 
 const int width = 1366;
-const int height = 700;
+const int height = 768;
 
 float arioX = width / 2;
 float arioY = -20;
@@ -470,8 +470,6 @@ void myMotion(int x, int y) {
 }
 
 void myReshape(int w, int h) {
-	width = w;
-	height = h;
 	GLfloat aspectRatio;
 
 	if(h == 0)
