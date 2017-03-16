@@ -16,8 +16,8 @@ bool pause = false;
 FMOD :: System *mySystem;
 FMOD :: Sound *mySound;
 
-const int width = 800;
-const int height = 600;
+const int width = 1366;
+const int height = 700;
 
 float arioX = width / 2;
 float arioY = -20;
@@ -60,8 +60,6 @@ int enemyInvisibleCounter = 0;
 
 bool keyStates[256] = {0};
 
-bool fullScreen = true;
-
 #define FONT GLUT_BITMAP_8_BY_13
 #define CHAR_W 8
 
@@ -96,6 +94,8 @@ void myKeyboardUp(unsigned char key, int x, int y) {
 	keyStates[key] = false;
 } 
 
+float movementSpeed = 0.2;
+
 void myIdle() {
 	if ((keyStates['p'] || keyStates['P']) && isPKeyUp) {
 		pause = !pause; 
@@ -104,20 +104,19 @@ void myIdle() {
 	else {
 		if((keyStates['a'] || keyStates['A']) && enemyInControl) {
 			if (enemyX > 0)
-				enemyX -= 0.1; }
+				enemyX -= movementSpeed; }
 
 		if((keyStates['d'] || keyStates['D']) && enemyInControl) {
 			if (enemyX < width)
-				enemyX += 0.1; }
+				enemyX += movementSpeed; }
 
 		if((keyStates['w'] || keyStates['W']) && enemyInControl) {
 			if (enemyY < height)
-				enemyY += 0.1; }
+				enemyY += movementSpeed; }
 
 		if((keyStates['s'] || keyStates['S']) && enemyInControl) {
 			if (enemyY > 20)
-
-				enemyY -= 0.1; }
+				enemyY -= movementSpeed; }
 
 		if(keyStates[' '] && isKeyUp && enemyIsAlive && enemyInControl) {
 			for (int i = 0; i < enemyBulletLimit; i++) {
@@ -471,6 +470,8 @@ void myMotion(int x, int y) {
 }
 
 void myReshape(int w, int h) {
+	width = w;
+	height = h;
 	GLfloat aspectRatio;
 
 	if(h == 0)
@@ -497,16 +498,8 @@ void myReshape(int w, int h) {
 }
 
 void mySpecial(int key, int x, int y) {
-	if (key == GLUT_KEY_F11) {
-		if (fullScreen) {
-			glutFullScreen();
-			fullScreen = !fullScreen;
-
-		} else {
-			glutReshapeWindow(width, height); 
-			glutPositionWindow(300, 100);
-			fullScreen = !fullScreen; }}}
-
+	if (key == GLUT_KEY_F4) {
+		exit(0); }}
 
 void main(int argc, char* argv[]) {
 
@@ -520,22 +513,23 @@ void main(int argc, char* argv[]) {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(width, height);
 
+
 	glutCreateWindow("Ario 0.0.1");
-	glutPositionWindow(300, 100);
 	glutSetCursor(GLUT_CURSOR_NONE);
 
-
+	glutFullScreen();
 	glutDisplayFunc(myDisplay);
 	glutMouseFunc(myMouse);
 	glutTimerFunc(20, myTimer, 1);
 	glutPassiveMotionFunc(myPassiveMotion);
 	glutMotionFunc(myMotion);
 	//glutReshapeFunc(myReshape);
-	glutSpecialFunc(mySpecial);
 	glutKeyboardFunc(myKeyboard);
 	glutKeyboardUpFunc(myKeyboardUp);
 	glutIdleFunc(myIdle);
-	gluOrtho2D(0, 800, 0, 600);
+	gluOrtho2D(0, width, 0, height);
+
+	glutSpecialFunc(mySpecial);
 
 	glutMainLoop();
 }
