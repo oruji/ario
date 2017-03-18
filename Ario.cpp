@@ -71,18 +71,13 @@ void emitString(char *s, int tx, int ty) {
 		glRasterPos2i(x, y);
 		glutBitmapCharacter(FONT, *s);
 		x += CHAR_W;
-
-		++s;
-	}
-}
+		++s; } }
 
 bool isElapsed(chrono :: steady_clock :: time_point start, int dur) {
-	return chrono :: duration_cast<chrono :: milliseconds>(chrono :: steady_clock :: now() - start).count() > dur;
-}
+	return chrono :: duration_cast<chrono :: milliseconds>(chrono :: steady_clock :: now() - start).count() > dur; }
 
 void myKeyboard(unsigned char key, int x, int y) {  
-	keyStates[key] = true;
-}  
+	keyStates[key] = true; }  
 
 void myKeyboardUp(unsigned char key, int x, int y) { 
 	if (key == ' ') {
@@ -91,8 +86,7 @@ void myKeyboardUp(unsigned char key, int x, int y) {
 	if (key == 'p' || key == 'P') {
 		isPKeyUp = true; }
 
-	keyStates[key] = false;
-} 
+	keyStates[key] = false; } 
 
 float movementSpeed = 0.2;
 
@@ -132,15 +126,11 @@ void myIdle() {
 					enemyY += 3;
 					enemyShake = true;
 
-					break;
-				}
-			}	
-		}
-	}
-	glutPostRedisplay();
-}
+					break; } } } }
 
-void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius){
+	glutPostRedisplay(); }
+
+void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius) {
 	int i;
 	int lineAmount = 100; //# of triangles used to draw circle
 
@@ -152,10 +142,9 @@ void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius){
 		glVertex2f(
 			x + (radius * cos(i *  twicePi / lineAmount)), 
 			y + (radius* sin(i * twicePi / lineAmount))
-			);
-	}
-	glEnd();
-}
+			); }
+	glEnd(); }
+
 long mycounter = 0;
 chrono :: steady_clock :: time_point mytime = chrono :: steady_clock :: now();
 void myDisplay(void) {
@@ -164,23 +153,20 @@ void myDisplay(void) {
 	if(isElapsed(mytime, 1000)) {
 		cout << "myDisplay(): " << mycounter << endl;
 		mycounter = 0;
-		mytime = chrono :: steady_clock :: now();
-	}
-
-
+		mytime = chrono :: steady_clock :: now(); }
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (pause) {
-		emitString("PAUSE", width / 2, height / 2);
-	}
+		emitString("PAUSE", width / 2, height / 2); }
 
 	else {
 		// ario scores
-		glColor3f(1, 1, 1);
+		glColor3f(0, 1, 0);
 		emitString(strdup(("Win: " + to_string(arioScore)).c_str()), 10, 10);
 
 		// enemy scores
+		glColor3f(1, 0, 0);
 		emitString(strdup(("Win: " + to_string(enemyScore)).c_str()), width - 70, height - 15);
 
 		if (!arioInControl) {
@@ -278,12 +264,7 @@ void myDisplay(void) {
 
 								arioScore ++;
 
-								break;
-						}
-					}
-				}
-			}
-		}
+								break; } } } } }
 
 		// enemy's bullets strike to ario
 		if (arioIsAlive && !arioInvisible) {
@@ -303,12 +284,7 @@ void myDisplay(void) {
 								arioDeadCounter = 0;
 								enemyScore ++;
 
-								break;
-						}
-					}
-				}
-			}
-		}
+								break; } } } } }
 
 		// ario bullet
 		glColor3f(0, 1, 0);
@@ -316,9 +292,7 @@ void myDisplay(void) {
 		for (int i = 0; i < arioBulletLimit; i++) {
 			if (arioBulletsIsAlive[i]) {
 				glVertex2i(arioBulletsX[i], arioBulletsY[i]);
-				glVertex2i(arioBulletsX[i], arioBulletsY[i] + 10);
-			}
-		}
+				glVertex2i(arioBulletsX[i], arioBulletsY[i] + 10); } }
 		glEnd();
 
 		// enemy bullet
@@ -327,15 +301,12 @@ void myDisplay(void) {
 		for (int i = 0; i < enemyBulletLimit; i++) {
 			if (enemyBulletsIsAlive[i]) {
 				glVertex2i(enemyBulletsX[i], enemyBulletsY[i]);
-				glVertex2i(enemyBulletsX[i], enemyBulletsY[i] - 10);
-			}
-		}
+				glVertex2i(enemyBulletsX[i], enemyBulletsY[i] - 10); } }
 		glEnd();
 
-		mySystem -> update();
-	}
-	glutSwapBuffers();
-}
+		mySystem -> update(); }
+
+	glutSwapBuffers(); }
 
 void myMouse(int button, int state, int x, int y) {
 	if (!pause) {
@@ -355,16 +326,9 @@ void myMouse(int button, int state, int x, int y) {
 							arioY -= 3;
 							arioShake = true;
 
-							break;
-						}
-					}
-				}
-			}
-		}
+							break; } } } } }
 
-		glutPostRedisplay();
-	}
-}
+		glutPostRedisplay(); } }
 
 
 long mycountertimer = 0;
@@ -375,12 +339,9 @@ void myTimer(int value) {
 	if(isElapsed(mytimetimer, 1000)) {
 		cout << "myTimer(): " << mycountertimer << endl;
 		mycountertimer = 0;
-		mytimetimer = chrono :: steady_clock :: now();
-	}
-
+		mytimetimer = chrono :: steady_clock :: now(); }
 
 	if (!pause) {
-
 		if (!arioIsAlive) {
 			arioDeadCounter ++; }
 
@@ -427,12 +388,10 @@ void myTimer(int value) {
 				if (arioBulletsY[i] > height) {
 					arioBulletsY[i] = 0;
 					arioBulletsX[i] = 0;
-					arioBulletsIsAlive[i] = false;
-				}
+					arioBulletsIsAlive[i] = false; }
 
 				if (arioBulletsIsAlive[i])
-					arioBulletsY[i] += 6;
-		}
+					arioBulletsY[i] += 6; }
 
 		// enemy bullets movement
 		for (int i = 0; i < enemyBulletLimit; i++) {
@@ -440,34 +399,28 @@ void myTimer(int value) {
 				if (enemyBulletsY[i] < 0) {
 					enemyBulletsY[i] = 0;
 					enemyBulletsX[i] = 0;
-					enemyBulletsIsAlive[i] = false;
-				}
+					enemyBulletsIsAlive[i] = false; }
 
 				if (enemyBulletsIsAlive[i])
-					enemyBulletsY[i] -= 6;
-		}
+					enemyBulletsY[i] -= 6; }
 
-		glutPostRedisplay();
+		glutPostRedisplay(); }
 
-	}
-	glutTimerFunc(20, myTimer, 1);
-}
+	glutTimerFunc(20, myTimer, 1); }
 
 void myPassiveMotion(int x, int y) {
 	if (arioIsAlive && arioInControl) {
 		arioX = x;
 		arioY = (height - y);
 
-		glutPostRedisplay(); }
-}
+		glutPostRedisplay(); } }
 
 void myMotion(int x, int y) {
 	if (arioIsAlive && arioInControl) {
 		arioX = x;
 		arioY = (height - y);
 
-		glutPostRedisplay(); }
-}
+		glutPostRedisplay(); } }
 
 void myReshape(int w, int h) {
 	GLfloat aspectRatio;
@@ -492,8 +445,7 @@ void myReshape(int w, int h) {
 		gluOrtho2D(0 * aspectRatio, width * aspectRatio, 0, height);
 
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-}
+	glLoadIdentity(); }
 
 void mySpecial(int key, int x, int y) {
 	if (key == GLUT_KEY_F4) {
@@ -504,13 +456,11 @@ void main(int argc, char* argv[]) {
 	//cin.get();
 
 	FMOD::System_Create(&mySystem);
-
 	mySystem -> init(32, FMOD_INIT_NORMAL, 0);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(width, height);
-
 
 	glutCreateWindow("Ario 0.0.1");
 	glutSetCursor(GLUT_CURSOR_NONE);
