@@ -164,21 +164,21 @@ void drawCircle(GLfloat x, GLfloat y, GLfloat radius) {
 	glEnd();
 }
 
-long mycounter = 0;
-chrono::steady_clock::time_point mytime = chrono::steady_clock::now();
+long displayCounter = 0;
+chrono::steady_clock::time_point myTime = chrono::steady_clock::now();
 void myDisplay(void) {
-	mycounter++;
+	displayCounter++;
 
-	if (isElapsed(mytime, 1000)) {
-		cout << "myDisplay(): " << mycounter << endl;
-		mycounter = 0;
-		mytime = chrono::steady_clock::now();
+	if (isElapsed(myTime, 1000)) {
+		cout << "myDisplay(): " << displayCounter << endl;
+		displayCounter = 0;
+		myTime = chrono::steady_clock::now();
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (pause) {
-		emitString((char *) "pause", width / 2, height / 2);
+		emitString((char *) "Pause", width / 2, height / 2);
 	}
 
 	else {
@@ -399,15 +399,15 @@ void myMouse(int button, int state, int x, int y) {
 	}
 }
 
-long mycountertimer = 0;
-chrono::steady_clock::time_point mytimetimer = chrono::steady_clock::now();
+long timerCounter = 0;
+chrono::steady_clock::time_point myTime = chrono::steady_clock::now();
 
 void myTimer(int value) {
-	mycountertimer++;
-	if (isElapsed(mytimetimer, 1000)) {
-		cout << "myTimer(): " << mycountertimer << endl;
-		mycountertimer = 0;
-		mytimetimer = chrono::steady_clock::now();
+	timerCounter++;
+	if (isElapsed(myTime, 1000)) {
+		cout << "myTimer(): " << timerCounter << endl;
+		timerCounter = 0;
+		myTime = chrono::steady_clock::now();
 	}
 
 	if (!pause) {
