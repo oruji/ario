@@ -75,7 +75,8 @@ void emitString(char *s, int tx, int ty) {
 }
 
 bool isElapsed(chrono::steady_clock::time_point start, int dur) {
-	return chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() > dur;
+	return chrono::duration_cast<chrono::milliseconds>(
+			chrono::steady_clock::now() - start).count() > dur;
 }
 
 void myKeyboard(unsigned char key, int x, int y) {
@@ -131,8 +132,10 @@ void myIdle() {
 					enemyBulletsIsAlive[i] = true;
 					isKeyUp = false;
 
-					FMOD_System_CreateSound(mySystem, "shot.mp3", FMOD_HARDWARE, 0, &mySound);
-					FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
+					FMOD_System_CreateSound(mySystem, "shot.mp3", FMOD_HARDWARE,
+							0, &mySound);
+					FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound,
+							false, 0);
 
 					enemyY += 3;
 					enemyShake = true;
@@ -155,7 +158,8 @@ void drawCircle(GLfloat x, GLfloat y, GLfloat radius) {
 
 	glBegin(GL_LINE_LOOP);
 	for (i = 0; i <= lineAmount; i++) {
-		glVertex2f(x + (radius * cos(i * twicePi / lineAmount)), y + (radius * sin(i * twicePi / lineAmount)));
+		glVertex2f(x + (radius * cos(i * twicePi / lineAmount)),
+				y + (radius * sin(i * twicePi / lineAmount)));
 	}
 	glEnd();
 }
@@ -174,7 +178,7 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (pause) {
-		emitString((char *)"pause", width / 2, height / 2);
+		emitString((char *) "pause", width / 2, height / 2);
 	}
 
 	else {
@@ -184,7 +188,8 @@ void myDisplay(void) {
 
 		// enemy scores
 		glColor3f(1, 0, 0);
-		emitString(strdup(("Win: " + to_string(enemyScore)).c_str()), width - 70, height - 15);
+		emitString(strdup(("Win: " + to_string(enemyScore)).c_str()),
+				width - 70, height - 15);
 
 		if (!arioInControl) {
 			if (arioInControlCounter >= 30) {
@@ -278,11 +283,16 @@ void myDisplay(void) {
 		if (enemyIsAlive && !enemyInvisible) {
 			for (int i = 0; i < arioBulletLimit; i++) {
 				if (arioBulletsIsAlive[i]) {
-					if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20) {
-						if ((arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY) || (arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY)) {
+					if (arioBulletsX[i] > enemyX - 20
+							&& arioBulletsX[i] < enemyX + 20) {
+						if ((arioBulletsY[i] > enemyY - 20
+								&& arioBulletsY[i] < enemyY)
+								|| (arioBulletsY[i] + 10 > enemyY - 20
+										&& arioBulletsY[i] + 10 < enemyY)) {
 							FMOD_System_CreateSound(mySystem, "explosion.mp3",
 							FMOD_HARDWARE, 0, &mySound);
-							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
+							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE,
+									mySound, false, 0);
 
 							enemyIsAlive = false;
 							arioBulletsIsAlive[i] = false;
@@ -304,11 +314,16 @@ void myDisplay(void) {
 		if (arioIsAlive && !arioInvisible) {
 			for (int i = 0; i < enemyBulletLimit; i++) {
 				if (enemyBulletsIsAlive[i]) {
-					if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20) {
-						if ((enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20) || (enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20)) {
+					if (enemyBulletsX[i] > arioX - 20
+							&& enemyBulletsX[i] < arioX + 20) {
+						if ((enemyBulletsY[i] > arioY
+								&& enemyBulletsY[i] < arioY + 20)
+								|| (enemyBulletsY[i] - 10 > arioY
+										&& enemyBulletsY[i] - 10 < arioY + 20)) {
 							FMOD_System_CreateSound(mySystem, "explosion.mp3",
 							FMOD_HARDWARE, 0, &mySound);
-							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
+							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE,
+									mySound, false, 0);
 
 							arioIsAlive = false;
 							enemyBulletsIsAlive[i] = false;
@@ -367,7 +382,8 @@ void myMouse(int button, int state, int x, int y) {
 
 							FMOD_System_CreateSound(mySystem, "shot.mp3",
 							FMOD_HARDWARE, 0, &mySound);
-							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
+							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE,
+									mySound, false, 0);
 
 							arioY -= 3;
 							arioShake = true;
@@ -556,7 +572,6 @@ int main(int argc, char* argv[]) {
 	glOrtho(0, width, 0, height, 0, 100);
 
 	glutSpecialFunc(mySpecial);
-
 	glutMainLoop();
 	return 0;
 }
