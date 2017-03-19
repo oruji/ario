@@ -174,7 +174,7 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (pause) {
-		emitString("PAUSE", width / 2, height / 2);
+		emitString((char *)"pause", width / 2, height / 2);
 	}
 
 	else {
@@ -279,7 +279,7 @@ void myDisplay(void) {
 			for (int i = 0; i < arioBulletLimit; i++) {
 				if (arioBulletsIsAlive[i]) {
 					if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20) {
-						if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY || arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY) {
+						if ((arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY) || (arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY)) {
 							FMOD_System_CreateSound(mySystem, "explosion.mp3",
 							FMOD_HARDWARE, 0, &mySound);
 							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
@@ -305,7 +305,7 @@ void myDisplay(void) {
 			for (int i = 0; i < enemyBulletLimit; i++) {
 				if (enemyBulletsIsAlive[i]) {
 					if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20) {
-						if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
+						if ((enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20) || (enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20)) {
 							FMOD_System_CreateSound(mySystem, "explosion.mp3",
 							FMOD_HARDWARE, 0, &mySound);
 							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
