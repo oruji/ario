@@ -1,20 +1,20 @@
-#include <stdlib.h>
+#include <windows.h>
+#include <GL/glut.h>
 #include <iostream>
-#include <gl/glut.h>
-#include "FMOD_API/inc/fmod.hpp"
-#include "FMOD_API/inc/fmod_errors.h"
+#include <FMOD/fmod.hpp>
+#include <FMOD/fmod_errors.h>
+#include <stdlib.h>
 #include <chrono>
 #include <string>
 #include <ctime>
-
-#pragma comment(lib, "FMOD_API/lib/fmodex_vc.lib")
+#include <math.h>
 
 using namespace std;
 
 bool pause = false;
 
-FMOD :: System *mySystem;
-FMOD :: Sound *mySound;
+FMOD_SYSTEM *mySystem;
+FMOD_SOUND *mySound;
 
 const int width = 1366;
 const int height = 768;
@@ -32,11 +32,10 @@ int arioDeadCounter;
 int arioInControlCounter = 0;
 int arioInvisibleCounter = 0;
 
-
 const int arioBulletLimit = 50;
-int arioBulletsY[arioBulletLimit] = {};
-int arioBulletsX[arioBulletLimit] = {};
-GLboolean arioBulletsIsAlive[arioBulletLimit] = {false};
+int arioBulletsY[arioBulletLimit] = { };
+int arioBulletsX[arioBulletLimit] = { };
+GLboolean arioBulletsIsAlive[arioBulletLimit] = { false };
 
 float enemyX = width / 2;
 float enemyY = height + 20;
@@ -48,9 +47,9 @@ int enemyShakeCounter = 0;
 int enemyScore = 0;
 
 const int enemyBulletLimit = 50;
-int enemyBulletsY[enemyBulletLimit] = {};
-int enemyBulletsX[enemyBulletLimit] = {};
-GLboolean enemyBulletsIsAlive[enemyBulletLimit] = {false};
+int enemyBulletsY[enemyBulletLimit] = { };
+int enemyBulletsX[enemyBulletLimit] = { };
+GLboolean enemyBulletsIsAlive[enemyBulletLimit] = { false };
 
 bool enemyInControl = false;
 bool enemyInvisible = true;
@@ -58,7 +57,7 @@ int enemyDeadCounter;
 int enemyInControlCounter = 0;
 int enemyInvisibleCounter = 0;
 
-bool keyStates[256] = {0};
+bool keyStates[256] = { 0 };
 
 #define FONT GLUT_BITMAP_8_BY_13
 #define CHAR_W 8
@@ -67,52 +66,64 @@ void emitString(char *s, int tx, int ty) {
 	int x = tx;
 	int y = ty;
 
-	while(*s) {
+	while (*s) {
 		glRasterPos2i(x, y);
 		glutBitmapCharacter(FONT, *s);
 		x += CHAR_W;
-		++s; } }
+		++s;
+	}
+}
 
-bool isElapsed(chrono :: steady_clock :: time_point start, int dur) {
-	return chrono :: duration_cast<chrono :: milliseconds>(chrono :: steady_clock :: now() - start).count() > dur; }
+bool isElapsed(chrono::steady_clock::time_point start, int dur) {
+	return chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - start).count() > dur;
+}
 
-void myKeyboard(unsigned char key, int x, int y) {  
-	keyStates[key] = true; }  
+void myKeyboard(unsigned char key, int x, int y) {
+	keyStates[key] = true;
+}
 
-void myKeyboardUp(unsigned char key, int x, int y) { 
+void myKeyboardUp(unsigned char key, int x, int y) {
 	if (key == ' ') {
-		isKeyUp = true; }
+		isKeyUp = true;
+	}
 
 	if (key == 'p' || key == 'P') {
-		isPKeyUp = true; }
+		isPKeyUp = true;
+	}
 
-	keyStates[key] = false; } 
+	keyStates[key] = false;
+}
 
 float movementSpeed = 0.2;
 
 void myIdle() {
 	if ((keyStates['p'] || keyStates['P']) && isPKeyUp) {
-		pause = !pause; 
-		isPKeyUp = false; }
+		pause = !pause;
+		isPKeyUp = false;
+	}
 
 	else {
-		if((keyStates['a'] || keyStates['A']) && enemyInControl) {
+		if ((keyStates['a'] || keyStates['A']) && enemyInControl) {
 			if (enemyX > 0)
-				enemyX -= movementSpeed; }
+				enemyX -= movementSpeed;
+		}
 
-		if((keyStates['d'] || keyStates['D']) && enemyInControl) {
+		if ((keyStates['d'] || keyStates['D']) && enemyInControl) {
 			if (enemyX < width)
-				enemyX += movementSpeed; }
+				enemyX += movementSpeed;
+		}
 
-		if((keyStates['w'] || keyStates['W']) && enemyInControl) {
+		if ((keyStates['w'] || keyStates['W']) && enemyInControl) {
 			if (enemyY < height)
-				enemyY += movementSpeed; }
+				enemyY += movementSpeed;
+		}
 
-		if((keyStates['s'] || keyStates['S']) && enemyInControl) {
+		if ((keyStates['s'] || keyStates['S']) && enemyInControl) {
 			if (enemyY > 20)
-				enemyY -= movementSpeed; }
+				enemyY -= movementSpeed;
+		}
 
-		if(keyStates[' '] && isKeyUp && enemyIsAlive && enemyInControl) {
+		if (keyStates[' '] && isKeyUp && enemyIsAlive && enemyInControl) {
 			for (int i = 0; i < enemyBulletLimit; i++) {
 				if (!enemyBulletsIsAlive[i]) {
 					enemyBulletsX[i] = enemyX;
@@ -120,17 +131,22 @@ void myIdle() {
 					enemyBulletsIsAlive[i] = true;
 					isKeyUp = false;
 
-					mySystem -> createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-					mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+					FMOD_System_CreateSound(mySystem, "shot.mp3", FMOD_HARDWARE, 0, &mySound);
+					FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
 
 					enemyY += 3;
 					enemyShake = true;
 
-					break; } } } }
+					break;
+				}
+			}
+		}
+	}
 
-	glutPostRedisplay(); }
+	glutPostRedisplay();
+}
 
-void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius) {
+void drawCircle(GLfloat x, GLfloat y, GLfloat radius) {
 	int i;
 	int lineAmount = 100; //# of triangles used to draw circle
 
@@ -138,27 +154,28 @@ void drawHollowCircle(GLfloat x, GLfloat y, GLfloat radius) {
 	GLfloat twicePi = 2.0f * 3.1415;
 
 	glBegin(GL_LINE_LOOP);
-	for(i = 0; i <= lineAmount;i++) { 
-		glVertex2f(
-			x + (radius * cos(i *  twicePi / lineAmount)), 
-			y + (radius* sin(i * twicePi / lineAmount))
-			); }
-	glEnd(); }
+	for (i = 0; i <= lineAmount; i++) {
+		glVertex2f(x + (radius * cos(i * twicePi / lineAmount)), y + (radius * sin(i * twicePi / lineAmount)));
+	}
+	glEnd();
+}
 
 long mycounter = 0;
-chrono :: steady_clock :: time_point mytime = chrono :: steady_clock :: now();
+chrono::steady_clock::time_point mytime = chrono::steady_clock::now();
 void myDisplay(void) {
-	mycounter ++;
+	mycounter++;
 
-	if(isElapsed(mytime, 1000)) {
+	if (isElapsed(mytime, 1000)) {
 		cout << "myDisplay(): " << mycounter << endl;
 		mycounter = 0;
-		mytime = chrono :: steady_clock :: now(); }
+		mytime = chrono::steady_clock::now();
+	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (pause) {
-		emitString("PAUSE", width / 2, height / 2); }
+		emitString("PAUSE", width / 2, height / 2);
+	}
 
 	else {
 		// ario scores
@@ -171,19 +188,27 @@ void myDisplay(void) {
 
 		if (!arioInControl) {
 			if (arioInControlCounter >= 30) {
-				arioInControl = true; } }
+				arioInControl = true;
+			}
+		}
 
 		if (arioInvisible) {
 			if (arioInvisibleCounter >= 100) {
-				arioInvisible = false; } }
+				arioInvisible = false;
+			}
+		}
 
 		if (!enemyInControl) {
 			if (enemyInControlCounter >= 30) {
-				enemyInControl = true; } }
+				enemyInControl = true;
+			}
+		}
 
 		if (enemyInvisible) {
 			if (enemyInvisibleCounter >= 100) {
-				enemyInvisible = false; } }
+				enemyInvisible = false;
+			}
+		}
 
 		// Ario
 		if (arioIsAlive) {
@@ -192,7 +217,8 @@ void myDisplay(void) {
 			glVertex2i(arioX - 20, arioY);
 			glVertex2i(arioX + 20, arioY);
 			glVertex2i(arioX, arioY + 20);
-			glEnd(); } 
+			glEnd();
+		}
 
 		else if (arioDeadCounter >= 100) {
 			arioX = width / 2;
@@ -202,17 +228,19 @@ void myDisplay(void) {
 			glVertex2i(arioX - 20, arioY);
 			glVertex2i(arioX + 20, arioY);
 			glVertex2i(arioX, arioY + 20);
-			glEnd(); 
+			glEnd();
 
-			arioIsAlive = true; 
-			arioInControl = false; 
-			arioInControlCounter = 0; 
+			arioIsAlive = true;
+			arioInControl = false;
+			arioInControlCounter = 0;
 			arioInvisible = true;
-			arioInvisibleCounter = 0; }
+			arioInvisibleCounter = 0;
+		}
 
 		// Invisible Circle
 		if (arioInvisible) {
-			drawHollowCircle(arioX, arioY + 5, 50); }
+			drawCircle(arioX, arioY + 5, 50);
+		}
 
 		// Enemy
 		if (enemyIsAlive) {
@@ -221,8 +249,8 @@ void myDisplay(void) {
 			glVertex2i(enemyX, enemyY - 20);
 			glVertex2i(enemyX + 20, enemyY);
 			glVertex2i(enemyX - 20, enemyY);
-			glEnd(); }
-
+			glEnd();
+		}
 
 		else if (enemyDeadCounter >= 100) {
 			enemyX = width / 2;
@@ -232,59 +260,70 @@ void myDisplay(void) {
 			glVertex2i(enemyX, enemyY - 20);
 			glVertex2i(enemyX + 20, enemyY);
 			glVertex2i(enemyX - 20, enemyY);
-			glEnd(); 
+			glEnd();
 
-			enemyIsAlive = true; 
-			enemyInControl = false; 
-			enemyInControlCounter = 0; 
+			enemyIsAlive = true;
+			enemyInControl = false;
+			enemyInControlCounter = 0;
 			enemyInvisible = true;
-			enemyInvisibleCounter = 0; }
+			enemyInvisibleCounter = 0;
+		}
 
 		// Invisible Circle
 		if (enemyInvisible) {
-			drawHollowCircle(enemyX, enemyY - 5, 50); }
-
+			drawCircle(enemyX, enemyY - 5, 50);
+		}
 
 		// ario's bullets strike to enemy
 		if (enemyIsAlive && !enemyInvisible) {
 			for (int i = 0; i < arioBulletLimit; i++) {
 				if (arioBulletsIsAlive[i]) {
 					if (arioBulletsX[i] > enemyX - 20 && arioBulletsX[i] < enemyX + 20) {
-						if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY || 
-							arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY) {
-								mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-								mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+						if (arioBulletsY[i] > enemyY - 20 && arioBulletsY[i] < enemyY || arioBulletsY[i] + 10 > enemyY - 20 && arioBulletsY[i] + 10 < enemyY) {
+							FMOD_System_CreateSound(mySystem, "explosion.mp3",
+							FMOD_HARDWARE, 0, &mySound);
+							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
 
-								enemyIsAlive = false;
-								arioBulletsIsAlive[i] = false;
-								arioBulletsX[i] = 0;
-								arioBulletsY[i] = 0;
+							enemyIsAlive = false;
+							arioBulletsIsAlive[i] = false;
+							arioBulletsX[i] = 0;
+							arioBulletsY[i] = 0;
 
-								enemyDeadCounter = 0;
+							enemyDeadCounter = 0;
 
-								arioScore ++;
+							arioScore++;
 
-								break; } } } } }
+							break;
+						}
+					}
+				}
+			}
+		}
 
 		// enemy's bullets strike to ario
 		if (arioIsAlive && !arioInvisible) {
 			for (int i = 0; i < enemyBulletLimit; i++) {
 				if (enemyBulletsIsAlive[i]) {
 					if (enemyBulletsX[i] > arioX - 20 && enemyBulletsX[i] < arioX + 20) {
-						if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || 
-							enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
-								mySystem -> createSound("explosion.mp3", FMOD_HARDWARE, 0, &mySound);
-								mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+						if (enemyBulletsY[i] > arioY && enemyBulletsY[i] < arioY + 20 || enemyBulletsY[i] - 10 > arioY && enemyBulletsY[i] - 10 < arioY + 20) {
+							FMOD_System_CreateSound(mySystem, "explosion.mp3",
+							FMOD_HARDWARE, 0, &mySound);
+							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
 
-								arioIsAlive = false;
-								enemyBulletsIsAlive[i] = false;
-								enemyBulletsX[i] = 0;
-								enemyBulletsY[i] = 0;
+							arioIsAlive = false;
+							enemyBulletsIsAlive[i] = false;
+							enemyBulletsX[i] = 0;
+							enemyBulletsY[i] = 0;
 
-								arioDeadCounter = 0;
-								enemyScore ++;
+							arioDeadCounter = 0;
+							enemyScore++;
 
-								break; } } } } }
+							break;
+						}
+					}
+				}
+			}
+		}
 
 		// ario bullet
 		glColor3f(0, 1, 0);
@@ -292,7 +331,9 @@ void myDisplay(void) {
 		for (int i = 0; i < arioBulletLimit; i++) {
 			if (arioBulletsIsAlive[i]) {
 				glVertex2i(arioBulletsX[i], arioBulletsY[i]);
-				glVertex2i(arioBulletsX[i], arioBulletsY[i] + 10); } }
+				glVertex2i(arioBulletsX[i], arioBulletsY[i] + 10);
+			}
+		}
 		glEnd();
 
 		// enemy bullet
@@ -301,12 +342,16 @@ void myDisplay(void) {
 		for (int i = 0; i < enemyBulletLimit; i++) {
 			if (enemyBulletsIsAlive[i]) {
 				glVertex2i(enemyBulletsX[i], enemyBulletsY[i]);
-				glVertex2i(enemyBulletsX[i], enemyBulletsY[i] - 10); } }
+				glVertex2i(enemyBulletsX[i], enemyBulletsY[i] - 10);
+			}
+		}
 		glEnd();
 
-		mySystem -> update(); }
+		FMOD_System_Update(mySystem);
+	}
 
-	glutSwapBuffers(); }
+	glutSwapBuffers();
+}
 
 void myMouse(int button, int state, int x, int y) {
 	if (!pause) {
@@ -320,67 +365,87 @@ void myMouse(int button, int state, int x, int y) {
 							arioBulletsY[i] = height - y;
 							arioBulletsIsAlive[i] = true;
 
-							mySystem -> createSound("shot.mp3", FMOD_HARDWARE, 0, &mySound);
-							mySystem -> playSound(FMOD_CHANNEL_FREE, mySound, false, 0);
+							FMOD_System_CreateSound(mySystem, "shot.mp3",
+							FMOD_HARDWARE, 0, &mySound);
+							FMOD_System_PlaySound(mySystem, FMOD_CHANNEL_FREE, mySound, false, 0);
 
 							arioY -= 3;
 							arioShake = true;
 
-							break; } } } } }
+							break;
+						}
+					}
+				}
+			}
+		}
 
-		glutPostRedisplay(); } }
-
+		glutPostRedisplay();
+	}
+}
 
 long mycountertimer = 0;
-chrono :: steady_clock :: time_point mytimetimer = chrono :: steady_clock :: now();
+chrono::steady_clock::time_point mytimetimer = chrono::steady_clock::now();
 
 void myTimer(int value) {
-	mycountertimer ++;
-	if(isElapsed(mytimetimer, 1000)) {
+	mycountertimer++;
+	if (isElapsed(mytimetimer, 1000)) {
 		cout << "myTimer(): " << mycountertimer << endl;
 		mycountertimer = 0;
-		mytimetimer = chrono :: steady_clock :: now(); }
+		mytimetimer = chrono::steady_clock::now();
+	}
 
 	if (!pause) {
 		if (!arioIsAlive) {
-			arioDeadCounter ++; }
+			arioDeadCounter++;
+		}
 
 		if (!enemyIsAlive) {
-			enemyDeadCounter ++; }
+			enemyDeadCounter++;
+		}
 
 		if (!arioInControl) {
-			arioInControlCounter ++; }
+			arioInControlCounter++;
+		}
 
 		if (arioInvisible) {
-			arioInvisibleCounter ++; }
+			arioInvisibleCounter++;
+		}
 
 		if (!enemyInControl) {
-			enemyInControlCounter ++; }
+			enemyInControlCounter++;
+		}
 
 		if (enemyInvisible) {
-			enemyInvisibleCounter ++; }
+			enemyInvisibleCounter++;
+		}
 
 		if (arioIsAlive && !arioInControl) {
-			arioY += 4; }
+			arioY += 4;
+		}
 
 		if (enemyIsAlive && !enemyInControl) {
-			enemyY -= 4; }
+			enemyY -= 4;
+		}
 
 		// ario shake
 		if (arioShake) {
-			arioShakeCounter ++; }
+			arioShakeCounter++;
+		}
 		if (arioShakeCounter == 4) {
-			arioY += 3; 
+			arioY += 3;
 			arioShakeCounter = 0;
-			arioShake = false; }
+			arioShake = false;
+		}
 
 		// enemy shake
-		if(enemyShake) {
-			enemyShakeCounter ++; }
-		if(enemyShakeCounter == 4) {
+		if (enemyShake) {
+			enemyShakeCounter++;
+		}
+		if (enemyShakeCounter == 4) {
 			enemyY -= 3;
 			enemyShakeCounter = 0;
-			enemyShake = false; }
+			enemyShake = false;
+		}
 
 		// ario bullets movement
 		for (int i = 0; i < arioBulletLimit; i++) {
@@ -388,10 +453,12 @@ void myTimer(int value) {
 				if (arioBulletsY[i] > height) {
 					arioBulletsY[i] = 0;
 					arioBulletsX[i] = 0;
-					arioBulletsIsAlive[i] = false; }
+					arioBulletsIsAlive[i] = false;
+				}
 
-				if (arioBulletsIsAlive[i])
-					arioBulletsY[i] += 6; }
+			if (arioBulletsIsAlive[i])
+				arioBulletsY[i] += 6;
+		}
 
 		// enemy bullets movement
 		for (int i = 0; i < enemyBulletLimit; i++) {
@@ -399,33 +466,41 @@ void myTimer(int value) {
 				if (enemyBulletsY[i] < 0) {
 					enemyBulletsY[i] = 0;
 					enemyBulletsX[i] = 0;
-					enemyBulletsIsAlive[i] = false; }
+					enemyBulletsIsAlive[i] = false;
+				}
 
-				if (enemyBulletsIsAlive[i])
-					enemyBulletsY[i] -= 6; }
+			if (enemyBulletsIsAlive[i])
+				enemyBulletsY[i] -= 6;
+		}
 
-		glutPostRedisplay(); }
+		glutPostRedisplay();
+	}
 
-	glutTimerFunc(20, myTimer, 1); }
+	glutTimerFunc(20, myTimer, 1);
+}
 
 void myPassiveMotion(int x, int y) {
 	if (arioIsAlive && arioInControl) {
 		arioX = x;
 		arioY = (height - y);
 
-		glutPostRedisplay(); } }
+		glutPostRedisplay();
+	}
+}
 
 void myMotion(int x, int y) {
 	if (arioIsAlive && arioInControl) {
 		arioX = x;
 		arioY = (height - y);
 
-		glutPostRedisplay(); } }
+		glutPostRedisplay();
+	}
+}
 
 void myReshape(int w, int h) {
 	GLfloat aspectRatio;
 
-	if(h == 0)
+	if (h == 0)
 		h = 1;
 
 	// Set Viewport to window dimensions
@@ -438,25 +513,28 @@ void myReshape(int w, int h) {
 	// Establish clipping volume (left, right, bottom, top, near, far)
 	aspectRatio = (GLfloat) w / (GLfloat) h;
 
-	if (w <= h) 
-		gluOrtho2D(0, width, 0 / aspectRatio, height / aspectRatio);
+	if (w <= h)
+		glOrtho(0, width, 0 / aspectRatio, height / aspectRatio, 0, 100);
 
-	else 
-		gluOrtho2D(0 * aspectRatio, width * aspectRatio, 0, height);
+	else
+		glOrtho(0 * aspectRatio, width * aspectRatio, 0, height, 0, 100);
 
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity(); }
+	glLoadIdentity();
+}
 
 void mySpecial(int key, int x, int y) {
 	if (key == GLUT_KEY_F4) {
-		exit(0); }}
+		exit(0);
+	}
+}
 
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 
 	//cin.get();
 
-	FMOD::System_Create(&mySystem);
-	mySystem -> init(32, FMOD_INIT_NORMAL, 0);
+	FMOD_System_Create(&mySystem);
+	FMOD_System_Init(mySystem, 32, FMOD_INIT_NORMAL, 0);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -475,9 +553,10 @@ void main(int argc, char* argv[]) {
 	glutKeyboardFunc(myKeyboard);
 	glutKeyboardUpFunc(myKeyboardUp);
 	glutIdleFunc(myIdle);
-	gluOrtho2D(0, width, 0, height);
+	glOrtho(0, width, 0, height, 0, 100);
 
 	glutSpecialFunc(mySpecial);
 
 	glutMainLoop();
+	return 0;
 }
