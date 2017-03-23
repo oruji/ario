@@ -400,14 +400,14 @@ void myMouse(int button, int state, int x, int y) {
 }
 
 long timerCounter = 0;
-chrono::steady_clock::time_point myTime = chrono::steady_clock::now();
+chrono::steady_clock::time_point myTime2 = chrono::steady_clock::now();
 
 void myTimer(int value) {
 	timerCounter++;
-	if (isElapsed(myTime, 1000)) {
+	if (isElapsed(myTime2, 1000)) {
 		cout << "myTimer(): " << timerCounter << endl;
 		timerCounter = 0;
-		myTime = chrono::steady_clock::now();
+		myTime2 = chrono::steady_clock::now();
 	}
 
 	if (!pause) {
