@@ -1,13 +1,11 @@
-#include <windows.h>
+#include <FMOD/fmod.h>
+#include <GL/gl.h>
 #include <GL/glut.h>
-#include <iostream>
-#include <FMOD/fmod.hpp>
-#include <FMOD/fmod_errors.h>
-#include <stdlib.h>
-#include <chrono>
-#include <string>
-#include <ctime>
 #include <math.h>
+#include <chrono>
+#include <cstring>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -362,9 +360,9 @@ void myDisplay(void) {
 		}
 		glEnd();
 
-		FMOD_System_Update(mySystem);
 	}
 
+	FMOD_System_Update(mySystem);
 	glutSwapBuffers();
 }
 
@@ -394,9 +392,9 @@ void myMouse(int button, int state, int x, int y) {
 				}
 			}
 		}
-
-		glutPostRedisplay();
 	}
+
+	glutPostRedisplay();
 }
 
 long timerCounter = 0;
@@ -488,10 +486,9 @@ void myTimer(int value) {
 			if (enemyBulletsIsAlive[i])
 				enemyBulletsY[i] -= 6;
 		}
-
-		glutPostRedisplay();
 	}
 
+	glutPostRedisplay();
 	glutTimerFunc(20, myTimer, 1);
 }
 
